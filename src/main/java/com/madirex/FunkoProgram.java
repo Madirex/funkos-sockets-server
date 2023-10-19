@@ -22,10 +22,10 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
+
+//TODO: ARREGLAR SONARLINT --> BACKUPSERVICE, UTILS Y FUNKOPROGRAM
 
 /**
  * Clase FunkoProgram que contiene el programa principal
@@ -201,36 +201,25 @@ public class FunkoProgram {
      */
     private Flux<Funko> printListOfFunkosOfName(String name) {
         AtomicBoolean almostOne = new AtomicBoolean(false);
-        try {
-            return controller.findAll()
-                    .filter(funko -> funko.getName().startsWith(name))
-                    .doOnEach(funko -> {
-                        String str = "";
-                        if (funko.hasValue()) {
-                            str = "🔵 Funko encontrado: " + funko.get();
-                            almostOne.set(true);
+        return controller.listOfFunkosByName(name)
+                .doOnEach(funko -> {
+                    String str = "";
+                    if (funko.hasValue()) {
+                        str = "🔵 Funko encontrado: " + funko.get();
+                        almostOne.set(true);
+                        logger.info(str);
+                    } else {
+                        if (!almostOne.get()) {
+                            str = "🔵 No se encontró un Funko con el nombre: " + name;
                             logger.info(str);
-                        } else {
-                            if (!almostOne.get()) {
-                                str = "🔵 No se encontró un Funko con el nombre: " + name;
-                                logger.info(str);
-                            }
                         }
-                    })
-                    .onErrorResume(e -> {
-                        String str = "Error: " + e;
-                        logger.error(str);
-                        return Mono.empty();
-                    });
-        } catch (SQLException e) {
-            String str = "ERROR SQL: " + e;
-            logger.error(str);
-            return Flux.empty();
-        } catch (FunkoNotFoundException e) {
-            String str = "Funkos no encontrados: " + e;
-            logger.error(str);
-            return Flux.empty();
-        }
+                    }
+                })
+                .onErrorResume(e -> {
+                    String str = "Error: " + e;
+                    logger.error(str);
+                    return Mono.empty();
+                });
     }
 
     /**
@@ -240,28 +229,17 @@ public class FunkoProgram {
      * @return Número
      */
     private Mono<Long> printNumberOfFunkosOfName(String name) {
-        try {
-            return controller.findAll()
-                    .filter(funko -> funko.getName().startsWith(name))
-                    .count()
-                    .doOnSuccess(count -> {
-                        String str = "🔵 Número de Funkos de " + name + ": " + count;
-                        logger.info(str);
-                    })
-                    .onErrorResume(e -> {
-                        String str = "Funkos no encontrados: " + e;
-                        logger.error(str);
-                        return Mono.empty();
-                    });
-        } catch (SQLException e) {
-            String str = "ERROR SQL: " + e;
-            logger.error(str);
-            return Mono.empty();
-        } catch (FunkoNotFoundException e) {
-            String str = "Funkos no encontrados: " + e;
-            logger.error(str);
-            return Mono.empty();
-        }
+        return controller.listOfFunkosByName(name)
+                .count()
+                .doOnSuccess(count -> {
+                    String str = "🔵 Número de Funkos de " + name + ": " + count;
+                    logger.info(str);
+                })
+                .onErrorResume(e -> {
+                    String str = "Funkos no encontrados: " + e;
+                    logger.error(str);
+                    return Mono.empty();
+                });
     }
 
     /**
@@ -271,27 +249,11 @@ public class FunkoProgram {
      * @return Devuelve los datos
      */
     private Flux<Funko> printFunkosReleasedIn(int year) {
-        try {
-            return controller.findAll()
-                    .onErrorResume(e -> {
-                        String str = "Fallo al obtener Funkos: " + e;
-                        logger.error(str);
-                        return Flux.empty();
-                    })
-                    .filter(funko -> funko.getReleaseDate().getYear() == year)
-                    .doOnNext(filteredFunko -> {
-                        String str = "🔵 Funko lanzado en el año " + year + ": " + filteredFunko;
-                        logger.info(str);
-                    });
-        } catch (SQLException e) {
-            String str = "ERROR SQL: " + e;
-            logger.error(str);
-            return Flux.empty();
-        } catch (FunkoNotFoundException e) {
-            String str = "Funkos no encontrados: " + e;
-            logger.error(str);
-            return Flux.empty();
-        }
+        return controller.getFunkoReleasedIn(year)
+                .doOnNext(filteredFunko -> {
+                    String str = "🔵 Funko lanzado en el año " + year + ": " + filteredFunko;
+                    logger.info(str);
+                });
     }
 
 
@@ -301,31 +263,15 @@ public class FunkoProgram {
      * @return Devuelve los datos
      */
     private Mono<Object> printNumberOfFunkosByModels() {
-        try {
-            return controller.findAll()
-                    .collectMultimap(Funko::getModel, funko -> 1)
-                    .flatMap(modelsMap -> {
-                        logger.info("🔵 Número de Funkos por modelos...");
-                        modelsMap.forEach((model, count) -> {
-                            String str = "🔵 " + model + " -> " + count.size();
-                            logger.info(str);
-                        });
-                        return Mono.empty();
-                    })
-                    .onErrorResume(e -> {
-                        String str = "Funkos no agrupados: " + e;
-                        logger.error(str);
-                        return Mono.empty();
+        return controller.getNumberFunkosByModelMap()
+                .flatMap(modelsMap -> {
+                    logger.info("🔵 Número de Funkos por modelos...");
+                    modelsMap.forEach((model, count) -> {
+                        String str = "🔵 " + model + " -> " + count.size();
+                        logger.info(str);
                     });
-        } catch (SQLException e) {
-            String str = "ERROR SQL: " + e;
-            logger.error(str);
-            return Mono.empty();
-        } catch (FunkoNotFoundException e) {
-            String str = "Funkos no encontrados: " + e;
-            logger.error(str);
-            return Mono.empty();
-        }
+                    return Mono.empty();
+                });
     }
 
     /**
@@ -334,34 +280,18 @@ public class FunkoProgram {
      * @return Datos
      */
     private Mono<Object> printFunkosGroupedByModels() {
-        try {
-            return controller.findAll()
-                    .collectMultimap(Funko::getModel, funko -> funko)
-                    .flatMap(modelToFunKoMap -> {
-                        logger.info("🔵 Funkos agrupados por modelos...");
+        return controller.getFunkoGroupedByModels()
+                .flatMap(modelToFunKoMap -> {
+                    logger.info("🔵 Funkos agrupados por modelos...");
 
-                        modelToFunKoMap.forEach((model, funkoList) -> {
-                            String str = "\n🔵 Modelo: " + model;
-                            logger.info(str);
-                            funkoList.forEach(funko -> logger.info(funko.toString()));
-                        });
-
-                        return Mono.empty();
-                    })
-                    .onErrorResume(e -> {
-                        String str = "Funkos no agrupados: " + e;
-                        logger.error(str);
-                        return Mono.empty();
+                    modelToFunKoMap.forEach((model, funkoList) -> {
+                        String str = "\n🔵 Modelo: " + model;
+                        logger.info(str);
+                        funkoList.forEach(funko -> logger.info(funko.toString()));
                     });
-        } catch (SQLException e) {
-            String str = "ERROR SQL: " + e;
-            logger.error(str);
-            return Mono.empty();
-        } catch (FunkoNotFoundException e) {
-            String str = "Funkos no encontrados: " + e;
-            logger.error(str);
-            return Mono.empty();
-        }
+
+                    return Mono.empty();
+                });
     }
 
 
@@ -371,25 +301,13 @@ public class FunkoProgram {
      * @return Datos
      */
     private Mono<Double> printAvgPriceOfFunkos() {
-        try {
-            return controller.findAll()
-                    .map(Funko::getPrice)
-                    .collect(Collectors.averagingDouble(Double::doubleValue))
-                    .doOnSuccess(averagePrice -> logger.info("🔵 Media de precio de Funkos: " + String.format("%.2f", averagePrice)))
-                    .onErrorResume(e -> {
-                        String str = "Fallo al calcular la media de precio de Funkos: " + e;
-                        logger.error(str);
-                        return Mono.empty();
-                    });
-        } catch (SQLException e) {
-            String str = "ERROR SQL: " + e;
-            logger.error(str);
-            return Mono.empty();
-        } catch (FunkoNotFoundException e) {
-            String str = "Funkos no encontrados: " + e;
-            logger.error(str);
-            return Mono.empty();
-        }
+        return controller.getAvgPriceOfFunko()
+                .doOnSuccess(averagePrice -> logger.info("🔵 Media de precio de Funkos: " + String.format("%.2f", averagePrice)))
+                .onErrorResume(e -> {
+                    String str = "Fallo al calcular la media de precio de Funkos: " + e;
+                    logger.error(str);
+                    return Mono.empty();
+                });
     }
 
     /**
@@ -397,39 +315,13 @@ public class FunkoProgram {
      *
      * @return Datos
      */
-    private Mono<Object> printExpensiveFunko() {
-        try {
-            return controller.findAll()
-                    .collectList()
-                    .flatMap(funkos -> {
-                        logger.info("🔵 Funko más caro...");
-
-                        Funko expensiveFunko = funkos.stream()
-                                .max(Comparator.comparingDouble(Funko::getPrice))
-                                .orElse(null);
-
-                        if (expensiveFunko != null) {
-                            logger.info(expensiveFunko.toString());
-                        } else {
-                            logger.info("No se encontró el Funko más caro.");
-                        }
-
-                        return Mono.empty();
-                    })
-                    .onErrorResume(e -> {
-                        String str = "Fallo al encontrar el Funko más caro: " + e;
-                        logger.error(str);
-                        return Mono.empty();
-                    });
-        } catch (SQLException e) {
-            String str = "ERROR SQL: " + e;
-            logger.error(str);
-            return Mono.empty();
-        } catch (FunkoNotFoundException e) {
-            String str = "Funkos no encontrados: " + e;
-            logger.error(str);
-            return Mono.empty();
-        }
+    private Mono<Void> printExpensiveFunko() {
+        return controller.getExpensiveFunko()
+                .flatMap(expensiveFunko -> {
+                    logger.info("🔵 Funko más caro: " + expensiveFunko.toString());
+                    return Mono.empty();
+                })
+                .then();
     }
 
     /**

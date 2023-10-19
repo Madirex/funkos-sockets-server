@@ -6,16 +6,18 @@ import com.madirex.exceptions.FunkoNotSavedException;
 import com.madirex.exceptions.FunkoNotValidException;
 import com.madirex.models.Notification;
 import com.madirex.models.funko.Funko;
+import com.madirex.models.funko.Model;
 import com.madirex.services.crud.funko.FunkoServiceImpl;
 import com.madirex.validators.FunkoValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.CorePublisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -136,6 +138,62 @@ public class FunkoController implements BaseController<Funko, UUID> {
     }
 
     /**
+     * Obtiene una lista de Funkos dado un nombre
+     *
+     * @param name nombre
+     * @return Lista de Funkos
+     */
+    public Flux<Funko> listOfFunkosByName(String name) {
+        return funkoService.listOfFunkosByName(name);
+    }
+
+    /**
+     * Recibe el Funko más caro
+     *
+     * @return Funko más caro
+     */
+    public Mono<Funko> getExpensiveFunko() {
+        return funkoService.getExpensiveFunko();
+    }
+
+    /**
+     * Retorna la media del precio de los Funkos
+     *
+     * @return media del precio de los Funkos
+     */
+    public Mono<Double> getAvgPriceOfFunko() {
+        return funkoService.getAvgPriceOfFunko();
+    }
+
+    /**
+     * Devuelve un Map con los modelos y el número de Funkos que hay de cada uno
+     *
+     * @return Map con los modelos y el número de Funkos que hay de cada uno
+     */
+    public Mono<Map<Model, Collection<Integer>>> getNumberFunkosByModelMap() {
+        return funkoService.getNumberFunkosByModelMap();
+    }
+
+    /**
+     * Devuelve un Map con los modelos y los Funkos que hay de cada uno
+     *
+     * @return Map con los modelos y los Funkos que hay de cada uno
+     */
+    public Mono<Map<Model, Collection<Funko>>> getFunkoGroupedByModels() {
+        return funkoService.getFunkoGroupedByModels();
+    }
+
+    /**
+     * Devuelve los Funkos lanzados en un año
+     *
+     * @param year año
+     * @return Funkos lanzados en un año
+     */
+    public Flux<Funko> getFunkoReleasedIn(int year) {
+        return funkoService.getFunkoReleasedIn(year);
+    }
+
+    /**
      * Exporta los datos de la base de datos a un archivo JSON
      *
      * @param url      url de la base de datos
@@ -167,8 +225,7 @@ public class FunkoController implements BaseController<Funko, UUID> {
      * @param fileName nombre del archivo
      */
     public Flux<Funko> importData(String url, String fileName) {
-        var fl = funkoService.importData(url, fileName);
-        return fl;
+        return funkoService.importData(url, fileName);
     }
 
     /**

@@ -7,6 +7,14 @@ import com.madirex.models.funko.Funko;
  * Clase FunkoValidator que valida un Funko
  */
 public class FunkoValidator {
+
+    /**
+     * Constructor privado
+     */
+    private FunkoValidator() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * Valida un Funko
      *

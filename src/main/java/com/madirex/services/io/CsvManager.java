@@ -1,6 +1,5 @@
 package com.madirex.services.io;
 
-import com.madirex.exceptions.CreateFolderException;
 import com.madirex.exceptions.ReadCSVFailException;
 import com.madirex.models.funko.Funko;
 import com.madirex.models.funko.Model;
@@ -8,7 +7,6 @@ import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -64,22 +62,6 @@ public class CsvManager {
                     });
         } catch (IOException e) {
             throw new ReadCSVFailException(e.getMessage());
-        }
-    }
-
-    /**
-     * Crea la carpeta out si no existe
-     *
-     * @throws CreateFolderException Excepción al crear la carpeta
-     */
-    private void createOutFolderIfNotExists() throws CreateFolderException {
-        try {
-            Path folderPath = Paths.get("out");
-            if (!Files.exists(folderPath)) {
-                Files.createDirectories(folderPath);
-            }
-        } catch (IOException e) {
-            throw new CreateFolderException(e.getMessage());
         }
     }
 }

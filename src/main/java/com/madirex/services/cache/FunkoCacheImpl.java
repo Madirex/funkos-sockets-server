@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class FunkoCacheImpl implements FunkoCache {
     private final Logger logger = LoggerFactory.getLogger(FunkoCacheImpl.class);
-    private final int maxSize;
     private final long secondsToClear;
     private final Map<String, Funko> cache;
     @Getter
@@ -32,7 +31,6 @@ public class FunkoCacheImpl implements FunkoCache {
      * @param secondsToClear minutos para limpiar la caché
      */
     public FunkoCacheImpl(int maxSize, long secondsToClear) {
-        this.maxSize = maxSize;
         this.secondsToClear = secondsToClear;
         this.cache = new LinkedHashMap<String, Funko>(maxSize, 0.75f, true) {
             @Override
@@ -99,7 +97,8 @@ public class FunkoCacheImpl implements FunkoCache {
         cache.entrySet().removeIf(entry -> {
             boolean shouldRemove = entry.getValue().getUpdateAt().plusSeconds(secondsToClear).isBefore(LocalDateTime.now());
             if (shouldRemove) {
-                logger.debug("Eliminado por caducidad Funko de caché con ID: " + entry.getKey());
+                String str = "Eliminado por caducidad Funko de caché con ID: " + entry.getKey();
+                logger.debug(str);
             }
             return shouldRemove;
         });

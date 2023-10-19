@@ -59,7 +59,7 @@ public class Utils {
      * @param dest Ruta del archivo
      * @param json String a escribir
      */
-    public void writeString(String dest, String json)  {
+    public void writeString(String dest, String json) {
         try {
             Files.writeString(new File(dest).toPath(), json);
         } catch (IOException e) {

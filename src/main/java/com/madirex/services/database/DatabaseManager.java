@@ -25,11 +25,9 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 public class DatabaseManager {
     private static DatabaseManager controller;
     private final Logger logger = LoggerFactory.getLogger(DatabaseManager.class);
-    private String serverUrl;
     private String databaseName;
     private String user;
     private String password;
-    private String driver;
     private String initScript;
     private String connectionUrl;
     private boolean dataInitialized = false;
@@ -83,9 +81,7 @@ public class DatabaseManager {
      */
     private synchronized void initConfig() {
         ApplicationProperties properties = ApplicationProperties.getInstance();
-        serverUrl = properties.readProperty("db.url", "localhost");
         databaseName = properties.readProperty("db.name", "AppDatabase");
-        driver = properties.readProperty("db.driver", "org.h2.Driver");
         initScript = properties.readProperty("db.init", "false");
         Dotenv dotenv = Dotenv.load();
         user = dotenv.get("DATABASE_USER");
@@ -102,7 +98,8 @@ public class DatabaseManager {
      * @return Mono<Void> Resultado de la ejecución
      */
     public Mono<Void> executeInitScript(String scriptSqlFile) {
-        logger.debug("Ejecutando script de inicialización de la base de datos: " + scriptSqlFile);
+        String str = "Ejecutando script de inicialización de la base de datos: " + scriptSqlFile;
+        logger.debug(str);
         return Mono.usingWhen(
                 connectionFactory.create(),
                 connection -> {

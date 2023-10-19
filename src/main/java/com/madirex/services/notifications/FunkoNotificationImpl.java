@@ -9,7 +9,7 @@ import reactor.core.publisher.FluxSink;
  * Implementación de la notificación de Funko
  */
 public class FunkoNotificationImpl implements FunkoNotification {
-    private static FunkoNotificationImpl INSTANCE = new FunkoNotificationImpl();
+    private static FunkoNotificationImpl instance = new FunkoNotificationImpl();
 
     private final Flux<Notification<Funko>> funkoNotificationFlux;
     private FluxSink<Notification<Funko>> fluxNotification;
@@ -28,10 +28,10 @@ public class FunkoNotificationImpl implements FunkoNotification {
      * @return Instancia de la notificación
      */
     public static FunkoNotificationImpl getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new FunkoNotificationImpl();
+        if (instance == null) {
+            instance = new FunkoNotificationImpl();
         }
-        return INSTANCE;
+        return instance;
     }
 
     /**

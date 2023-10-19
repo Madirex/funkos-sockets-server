@@ -7,8 +7,6 @@ import com.madirex.services.database.DatabaseManager;
 import io.r2dbc.pool.ConnectionPool;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.Result;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -25,7 +23,6 @@ public class FunkoRepositoryImpl implements FunkoRepository {
     private static FunkoRepositoryImpl funkoRepositoryImplInstance;
     private final IdGenerator idGenerator;
     private final ConnectionPool connectionFactory;
-    private final Logger logger = LoggerFactory.getLogger(FunkoRepositoryImpl.class);
 
     /**
      * Constructor de la clase

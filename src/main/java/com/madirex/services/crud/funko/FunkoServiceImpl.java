@@ -4,6 +4,7 @@ import com.madirex.exceptions.FunkoNotFoundException;
 import com.madirex.exceptions.FunkoNotRemovedException;
 import com.madirex.models.Notification;
 import com.madirex.models.funko.Funko;
+import com.madirex.models.funko.Model;
 import com.madirex.repositories.funko.FunkoRepositoryImpl;
 import com.madirex.services.cache.FunkoCache;
 import com.madirex.services.io.BackupService;
@@ -14,13 +15,17 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Implementación de la interfaz FunkoService
  */
 public class FunkoServiceImpl implements FunkoService<List<Funko>> {
+    public static final String FUNKO_WITH_ID_MSG = "Funko con ID ";
     private static FunkoServiceImpl funkoServiceImplInstance;
 
     private final FunkoCache cache;
@@ -133,7 +138,7 @@ public class FunkoServiceImpl implements FunkoService<List<Funko>> {
                 .switchIfEmpty(funkoRepository.findById(id)
                         .flatMap(funko -> cache.put(id.toString(), funko)
                                 .then(Mono.just(funko)))
-                        .switchIfEmpty(Mono.error(new FunkoNotFoundException("Funko con ID " + id + " no encontrado."))));
+                        .switchIfEmpty(Mono.error(new FunkoNotFoundException(FUNKO_WITH_ID_MSG + id + " no encontrado."))));
     }
 
     /**
@@ -160,7 +165,7 @@ public class FunkoServiceImpl implements FunkoService<List<Funko>> {
     public Mono<Funko> update(UUID funkoId, Funko newFunko) {
         logger.debug("Actualizando Funko");
         return funkoRepository.findById(funkoId)
-                .switchIfEmpty(Mono.error(new FunkoNotFoundException("Funko con ID " + funkoId + " no encontrado")))
+                .switchIfEmpty(Mono.error(new FunkoNotFoundException(FUNKO_WITH_ID_MSG + funkoId + " no encontrado")))
                 .flatMap(existing -> funkoRepository.update(funkoId, newFunko)
                         .flatMap(updated -> cache.put(String.valueOf(funkoId), updated)
                                 .thenReturn(updated)))
@@ -177,13 +182,86 @@ public class FunkoServiceImpl implements FunkoService<List<Funko>> {
     public Mono<Funko> delete(UUID id) {
         logger.debug("Eliminando Funko");
         return funkoRepository.findById(id)
-                .switchIfEmpty(Mono.error(new FunkoNotFoundException("Funko con ID " + id + " no encontrado")))
+                .switchIfEmpty(Mono.error(new FunkoNotFoundException(FUNKO_WITH_ID_MSG + id + " no encontrado")))
                 .flatMap(funko -> cache.remove(funko.getCod().toString())
                         .then(funkoRepository.delete(funko.getCod()))
                         .thenReturn(funko))
-                .onErrorResume(ex -> Mono.error(new FunkoNotRemovedException("Funko con ID " + id + " no eiminado")))
+                .onErrorResume(ex -> Mono.error(new FunkoNotRemovedException(FUNKO_WITH_ID_MSG + id + " no eiminado")))
                 .doOnSuccess(saved -> funkoNotification.notify(new Notification<>(Notification.Type.DELETED, saved)));
     }
+
+    /**
+     * Lista de Funkos dado un nombre
+     *
+     * @param name nombre
+     * @return Lista de Funkos
+     */
+    public Flux<Funko> listOfFunkosByName(String name) {
+        logger.debug("Buscando Funkos por nombre");
+        return funkoRepository.findAll()
+                .filter(funko -> funko.getName().startsWith(name)).switchIfEmpty(Flux.error(new
+                        FunkoNotFoundException("No se encontraron Funkos con el nombre: " + name)));
+    }
+
+    /**
+     * Recibe el Funko más caro
+     *
+     * @return Funko más caro
+     */
+    public Mono<Funko> getExpensiveFunko() {
+        logger.debug("Buscando el Funko más caro");
+        return funkoRepository.findAll()
+                .reduce((f1, f2) -> f1.getPrice() > f2.getPrice() ? f1 : f2)
+                .switchIfEmpty(Mono.error(new FunkoNotFoundException("No se encontró ningún Funko")));
+    }
+
+    /**
+     * Retorna la media del precio de los Funkos
+     *
+     * @return media del precio de los Funkos
+     */
+    public Mono<Double> getAvgPriceOfFunko() {
+        logger.debug("Buscando precio medio de los Funkos");
+        return funkoRepository.findAll()
+                .map(Funko::getPrice)
+                .collect(Collectors.averagingDouble(Double::doubleValue))
+                .switchIfEmpty(Mono.error(new FunkoNotFoundException("No se encontró ningún Funko")));
+    }
+
+    /**
+     * Devuelve los Funkos lanzados en un año
+     *
+     * @param year año
+     * @return Funkos lanzados en un año
+     */
+    public Flux<Funko> getFunkoReleasedIn(int year) {
+        String msg = "Buscando Funkos lanzados en el año: " + year;
+        logger.debug(msg);
+        return funkoRepository.findAll()
+                .filter(funko -> funko.getReleaseDate().getYear() == year)
+                .switchIfEmpty(Mono.error(new FunkoNotFoundException("No se encontró ningún Funko lanzado en el año: " + year)));
+    }
+
+    /**
+     * Devuelve un Map con los modelos y el número de Funkos que hay de cada uno
+     *
+     * @return Map con los modelos y el número de Funkos que hay de cada uno
+     */
+    public Mono<Map<Model, Collection<Integer>>> getNumberFunkosByModelMap() {
+        return funkoRepository.findAll()
+                .collectMultimap(Funko::getModel, funko -> 1);
+    }
+
+    /**
+     * Devuelve un Map con los modelos y los Funkos que hay de cada uno
+     *
+     * @return Map con los modelos y los Funkos que hay de cada uno
+     */
+    public Mono<Map<Model, Collection<Funko>>> getFunkoGroupedByModels() {
+        return funkoRepository.findAll()
+                .collectMultimap(Funko::getModel, funko -> funko);
+    }
+
 
     /**
      * Cierra el caché

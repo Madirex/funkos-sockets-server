@@ -53,8 +53,10 @@ public class DatabaseManager {
     private DatabaseManager() {
         initConfig();
         ConnectionFactoryOptions options = ConnectionFactoryOptions.builder()
-                .option(ConnectionFactoryOptions.DRIVER, "h2")
-                .option(PROTOCOL, "file")  // file, mem
+                .option(ConnectionFactoryOptions.DRIVER, ApplicationProperties.getInstance()
+                        .readProperty("db.driver", "h2"))
+                .option(PROTOCOL, ApplicationProperties.getInstance()
+                        .readProperty("db.protocol", "file"))
                 .option(USER, user)
                 .option(PASSWORD, password)
                 .option(DATABASE, connectionUrl + databaseName)

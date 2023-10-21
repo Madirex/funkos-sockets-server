@@ -11,7 +11,8 @@ import java.util.logging.Logger;
 public class ApplicationProperties {
 
     private static ApplicationProperties applicationPropertiesInstance;
-    private final Properties properties;
+    private final Properties databaseProperties;
+    private final Properties serverProperties;
 
     /**
      * Constructor
@@ -19,12 +20,14 @@ public class ApplicationProperties {
      * Si no se puede leer el fichero, se muestra un mensaje de error en el log
      */
     private ApplicationProperties() {
-        properties = new Properties();
+        databaseProperties = new Properties();
+        serverProperties = new Properties();
         try {
-            properties.load(getClass().getClassLoader().getResourceAsStream("database.properties"));
+            databaseProperties.load(getClass().getClassLoader().getResourceAsStream("database.properties"));
+            serverProperties.load(getClass().getClassLoader().getResourceAsStream("server.properties"));
         } catch (IOException ex) {
             Logger.getLogger(getClass().getName()).log(Level.ALL, ex,
-                    () -> "IOException - Error al leer el fichero de propiedades.");
+                    () -> "IOException - Error al leer los ficheros de propiedades.");
         }
     }
 
@@ -43,10 +46,22 @@ public class ApplicationProperties {
     /**
      * Devuelve el valor de una clave del fichero de propiedades
      *
-     * @param keyName Nombre de la clave
+     * @param propertyType  Tipo de propiedad
+     * @param keyName       Nombre de la clave
+     * @param ifNotExistStr Valor por defecto si no existe la clave
      * @return Valor de la clave
      */
-    public String readProperty(String keyName, String ifNotExistStr) {
-        return properties.getProperty(keyName, ifNotExistStr);
+    public String readProperty(PropertyType propertyType, String keyName, String ifNotExistStr) {
+        return switch (propertyType) {
+            case DATABASE -> databaseProperties.getProperty(keyName, ifNotExistStr);
+            case SERVER -> serverProperties.getProperty(keyName, ifNotExistStr);
+        };
+    }
+
+    /**
+     * Enum de tipos de propiedades
+     */
+    public enum PropertyType {
+        DATABASE, SERVER
     }
 }

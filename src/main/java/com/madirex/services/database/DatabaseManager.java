@@ -54,9 +54,11 @@ public class DatabaseManager {
         initConfig();
         ConnectionFactoryOptions options = ConnectionFactoryOptions.builder()
                 .option(ConnectionFactoryOptions.DRIVER, ApplicationProperties.getInstance()
-                        .readProperty("db.driver", "h2"))
+                        .readProperty(ApplicationProperties.PropertyType.DATABASE,
+                                "db.driver", "h2"))
                 .option(PROTOCOL, ApplicationProperties.getInstance()
-                        .readProperty("db.protocol", "file"))
+                        .readProperty(ApplicationProperties.PropertyType.DATABASE,
+                                "db.protocol", "file"))
                 .option(USER, user)
                 .option(PASSWORD, password)
                 .option(DATABASE, connectionUrl + databaseName)
@@ -83,8 +85,10 @@ public class DatabaseManager {
      */
     private synchronized void initConfig() {
         ApplicationProperties properties = ApplicationProperties.getInstance();
-        databaseName = properties.readProperty("db.name", "AppDatabase");
-        initScript = properties.readProperty("db.init", "false");
+        databaseName = properties.readProperty(ApplicationProperties.PropertyType.DATABASE,
+                "db.name", "AppDatabase");
+        initScript = properties.readProperty(ApplicationProperties.PropertyType.DATABASE,
+                "db.init", "false");
         Dotenv dotenv = Dotenv.load();
         user = dotenv.get("DATABASE_USER");
         password = dotenv.get("DATABASE_PASSWORD");

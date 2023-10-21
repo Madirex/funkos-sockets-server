@@ -1,8 +1,12 @@
 package com.madirex.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Optional;
 
 /**
  * Clase Utils que contiene métodos útiles para la aplicación
@@ -10,6 +14,7 @@ import java.nio.file.Files;
 public class Utils {
 
     private static Utils utilsInstance;
+    private final Logger logger = LoggerFactory.getLogger(Utils.class);
 
     /**
      * Constructor privado de la clase Utils
@@ -45,11 +50,13 @@ public class Utils {
      * @param dataFile Archivo del que se quieren obtener los bytes
      * @return Bytes del archivo
      */
-    public byte[] getFileBytes(File dataFile) {
+    public Optional<byte[]> getFileBytes(File dataFile) {
         try {
-            return Files.readAllBytes(dataFile.toPath());
+            return Optional.of(Files.readAllBytes(dataFile.toPath()));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            String stre = "Error al leer el archivo: " + e.getMessage();
+            logger.error(stre);
+            return Optional.empty();
         }
     }
 
@@ -63,7 +70,8 @@ public class Utils {
         try {
             Files.writeString(new File(dest).toPath(), json);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            String stre = "Error al escribir el archivo: " + e.getMessage();
+            logger.error(stre);
         }
     }
 }

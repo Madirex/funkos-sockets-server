@@ -15,11 +15,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Implementación de la interfaz FunkoService
@@ -82,19 +79,40 @@ public class FunkoServiceImpl implements FunkoService<List<Funko>> {
     }
 
     /**
-     * Busca un elemento en el repositorio por su nombre
+     * Busca elementos en el repositorio por su modelo
      *
-     * @param name Nombre del elemento a buscar
+     * @param model Modelo de los elementos a buscar
      * @return Lista de elementos encontrados
      */
     @Override
-    public Flux<Funko> findByName(String name) {
-        logger.debug("Obteniendo todos los Funkos ordenados por nombre");
-        return funkoRepository.findByName(name)
+    public Flux<Funko> findByModel(Model model) {
+        logger.debug("Obteniendo todos los Funkos por su nombre");
+        return funkoRepository.findByModel(model)
                 .collectList()
                 .flatMapMany(list -> {
                     if (list.isEmpty()) {
-                        return Flux.error(new FunkoNotFoundException("No se encontraron Funkos con el nombre: " + name));
+                        return Flux.error(new FunkoNotFoundException("No se encontraron Funkos con el modelo: " + model));
+                    } else {
+                        return Flux.fromIterable(list);
+                    }
+                });
+    }
+
+    /**
+     * Busca elementos en el repositorio por año de lanzamiento
+     *
+     * @param year Año de lanzamiento de los elementos a buscar
+     * @return Lista de elementos encontrados
+     */
+    @Override
+    public Flux<Funko> findByReleaseYear(Integer year) {
+        logger.debug("Obteniendo todos los Funkos por año de lanzamiento");
+        return funkoRepository.findByReleaseYear(year)
+                .collectList()
+                .flatMapMany(list -> {
+                    if (list.isEmpty()) {
+                        return Flux.error(new
+                                FunkoNotFoundException("No se encontraron Funkos lanzados en el año: " + year));
                     } else {
                         return Flux.fromIterable(list);
                     }
@@ -189,79 +207,6 @@ public class FunkoServiceImpl implements FunkoService<List<Funko>> {
                 .onErrorResume(ex -> Mono.error(new FunkoNotRemovedException(FUNKO_WITH_ID_MSG + id + " no eiminado")))
                 .doOnSuccess(saved -> funkoNotification.notify(new Notification<>(Notification.Type.DELETED, saved)));
     }
-
-    /**
-     * Lista de Funkos dado un nombre
-     *
-     * @param name nombre
-     * @return Lista de Funkos
-     */
-    public Flux<Funko> listOfFunkosByName(String name) {
-        logger.debug("Buscando Funkos por nombre");
-        return funkoRepository.findAll()
-                .filter(funko -> funko.getName().startsWith(name)).switchIfEmpty(Flux.error(new
-                        FunkoNotFoundException("No se encontraron Funkos con el nombre: " + name)));
-    }
-
-    /**
-     * Recibe el Funko más caro
-     *
-     * @return Funko más caro
-     */
-    public Mono<Funko> getExpensiveFunko() {
-        logger.debug("Buscando el Funko más caro");
-        return funkoRepository.findAll()
-                .reduce((f1, f2) -> f1.getPrice() > f2.getPrice() ? f1 : f2)
-                .switchIfEmpty(Mono.error(new FunkoNotFoundException("No se encontró ningún Funko")));
-    }
-
-    /**
-     * Retorna la media del precio de los Funkos
-     *
-     * @return media del precio de los Funkos
-     */
-    public Mono<Double> getAvgPriceOfFunko() {
-        logger.debug("Buscando precio medio de los Funkos");
-        return funkoRepository.findAll()
-                .map(Funko::getPrice)
-                .collect(Collectors.averagingDouble(Double::doubleValue))
-                .switchIfEmpty(Mono.error(new FunkoNotFoundException("No se encontró ningún Funko")));
-    }
-
-    /**
-     * Devuelve los Funkos lanzados en un año
-     *
-     * @param year año
-     * @return Funkos lanzados en un año
-     */
-    public Flux<Funko> getFunkoReleasedIn(int year) {
-        String msg = "Buscando Funkos lanzados en el año: " + year;
-        logger.debug(msg);
-        return funkoRepository.findAll()
-                .filter(funko -> funko.getReleaseDate().getYear() == year)
-                .switchIfEmpty(Mono.error(new FunkoNotFoundException("No se encontró ningún Funko lanzado en el año: " + year)));
-    }
-
-    /**
-     * Devuelve un Map con los modelos y el número de Funkos que hay de cada uno
-     *
-     * @return Map con los modelos y el número de Funkos que hay de cada uno
-     */
-    public Mono<Map<Model, Collection<Integer>>> getNumberFunkosByModelMap() {
-        return funkoRepository.findAll()
-                .collectMultimap(Funko::getModel, funko -> 1);
-    }
-
-    /**
-     * Devuelve un Map con los modelos y los Funkos que hay de cada uno
-     *
-     * @return Map con los modelos y los Funkos que hay de cada uno
-     */
-    public Mono<Map<Model, Collection<Funko>>> getFunkoGroupedByModels() {
-        return funkoRepository.findAll()
-                .collectMultimap(Funko::getModel, funko -> funko);
-    }
-
 
     /**
      * Cierra el caché

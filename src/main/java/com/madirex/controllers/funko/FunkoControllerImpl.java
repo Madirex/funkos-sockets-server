@@ -1,7 +1,5 @@
-package com.madirex.controllers;
+package com.madirex.controllers.funko;
 
-import com.madirex.exceptions.FunkoNotFoundException;
-import com.madirex.exceptions.FunkoNotRemovedException;
 import com.madirex.exceptions.FunkoNotSavedException;
 import com.madirex.exceptions.FunkoNotValidException;
 import com.madirex.models.Notification;
@@ -14,18 +12,15 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Map;
 import java.util.UUID;
 
 /**
  * Controlador de Funko
  */
-public class FunkoController implements BaseController<Funko, UUID> {
-    private static FunkoController funkoControllerInstance;
-    private final Logger logger = LoggerFactory.getLogger(FunkoController.class);
+public class FunkoControllerImpl implements FunkoController {
+    private static FunkoControllerImpl funkoControllerImplInstance;
+    private final Logger logger = LoggerFactory.getLogger(FunkoControllerImpl.class);
 
     private final FunkoServiceImpl funkoService;
 
@@ -34,7 +29,7 @@ public class FunkoController implements BaseController<Funko, UUID> {
      *
      * @param funkoService servicio de Funko
      */
-    private FunkoController(FunkoServiceImpl funkoService) {
+    private FunkoControllerImpl(FunkoServiceImpl funkoService) {
         this.funkoService = funkoService;
     }
 
@@ -43,11 +38,11 @@ public class FunkoController implements BaseController<Funko, UUID> {
      *
      * @param funkoService servicio de Funko
      */
-    public static synchronized FunkoController getInstance(FunkoServiceImpl funkoService) {
-        if (funkoControllerInstance == null) {
-            funkoControllerInstance = new FunkoController(funkoService);
+    public static synchronized FunkoControllerImpl getInstance(FunkoServiceImpl funkoService) {
+        if (funkoControllerImplInstance == null) {
+            funkoControllerImplInstance = new FunkoControllerImpl(funkoService);
         }
-        return funkoControllerInstance;
+        return funkoControllerImplInstance;
     }
 
 
@@ -55,10 +50,9 @@ public class FunkoController implements BaseController<Funko, UUID> {
      * Busca todos los Funkos
      *
      * @return Funkos encontrados
-     * @throws SQLException           si hay un error en la base de datos
-     * @throws FunkoNotFoundException si no se encuentran Funkos
      */
-    public Flux<Funko> findAll() throws SQLException, FunkoNotFoundException {
+    @Override
+    public Flux<Funko> findAll() {
         logger.debug("FindAll");
         return funkoService.findAll();
     }
@@ -68,27 +62,38 @@ public class FunkoController implements BaseController<Funko, UUID> {
      *
      * @param id id del Funko
      * @return Funko encontrado
-     * @throws SQLException           si hay un error en la base de datos
-     * @throws FunkoNotFoundException si no se encuentra el Funko
      */
-    public Mono<Funko> findById(UUID id) throws SQLException, FunkoNotFoundException {
+    @Override
+    public Mono<Funko> findById(UUID id) {
         String msg = "FindById " + id;
         logger.debug(msg);
         return funkoService.findById(id);
     }
 
     /**
-     * Busca Funkos por nombre
+     * Busca Funkos por modelo
      *
-     * @param name nombre del Funko
+     * @param model modelo del Funko
      * @return Funkos encontrados
-     * @throws SQLException           si hay un error en la base de datos
-     * @throws FunkoNotFoundException si no se encuentra el Funko
      */
-    public Flux<Funko> findByName(String name) throws FunkoNotFoundException {
-        String msg = "FindByName " + name;
+    @Override
+    public Flux<Funko> findByModel(Model model) {
+        String msg = "FindByModel " + model;
         logger.debug(msg);
-        return funkoService.findByName(name);
+        return funkoService.findByModel(model);
+    }
+
+    /**
+     * Busca Funkos por año de lanzamiento
+     *
+     * @param year año de lanzamiento
+     * @return Funkos encontrados
+     */
+    @Override
+    public Flux<Funko> findByReleaseYear(Integer year) {
+        String msg = "FindByReleaseYear " + year;
+        logger.debug(msg);
+        return funkoService.findByReleaseYear(year);
     }
 
     /**
@@ -100,6 +105,7 @@ public class FunkoController implements BaseController<Funko, UUID> {
      * @throws FunkoNotSavedException si no se guarda el Funko
      * @throws FunkoNotValidException si el Funko no es válido
      */
+    @Override
     public Mono<Funko> save(Funko funko) throws SQLException, FunkoNotSavedException, FunkoNotValidException {
         String msg = "Save " + funko;
         logger.debug(msg);
@@ -114,9 +120,9 @@ public class FunkoController implements BaseController<Funko, UUID> {
      * @param funko Funko a actualizar
      * @return Funko actualizado
      * @throws FunkoNotValidException si el Funko no es válido
-     * @throws SQLException           si hay un error en la base de datos
      */
-    public Mono<Funko> update(UUID id, Funko funko) throws FunkoNotValidException, SQLException {
+    @Override
+    public Mono<Funko> update(UUID id, Funko funko) throws FunkoNotValidException {
         String msg = "Update " + funko;
         logger.debug(msg);
         FunkoValidator.validate(funko);
@@ -128,69 +134,12 @@ public class FunkoController implements BaseController<Funko, UUID> {
      *
      * @param id id del Funko
      * @return Funko eliminado
-     * @throws SQLException             si hay un error en la base de datos
-     * @throws FunkoNotRemovedException si no se elimina el Funko
      */
-    public Mono<Funko> delete(UUID id) throws SQLException, FunkoNotRemovedException {
+    @Override
+    public Mono<Funko> delete(UUID id) {
         String msg = "Delete " + id;
         logger.debug(msg);
         return funkoService.delete(id);
-    }
-
-    /**
-     * Obtiene una lista de Funkos dado un nombre
-     *
-     * @param name nombre
-     * @return Lista de Funkos
-     */
-    public Flux<Funko> listOfFunkosByName(String name) {
-        return funkoService.listOfFunkosByName(name);
-    }
-
-    /**
-     * Recibe el Funko más caro
-     *
-     * @return Funko más caro
-     */
-    public Mono<Funko> getExpensiveFunko() {
-        return funkoService.getExpensiveFunko();
-    }
-
-    /**
-     * Retorna la media del precio de los Funkos
-     *
-     * @return media del precio de los Funkos
-     */
-    public Mono<Double> getAvgPriceOfFunko() {
-        return funkoService.getAvgPriceOfFunko();
-    }
-
-    /**
-     * Devuelve un Map con los modelos y el número de Funkos que hay de cada uno
-     *
-     * @return Map con los modelos y el número de Funkos que hay de cada uno
-     */
-    public Mono<Map<Model, Collection<Integer>>> getNumberFunkosByModelMap() {
-        return funkoService.getNumberFunkosByModelMap();
-    }
-
-    /**
-     * Devuelve un Map con los modelos y los Funkos que hay de cada uno
-     *
-     * @return Map con los modelos y los Funkos que hay de cada uno
-     */
-    public Mono<Map<Model, Collection<Funko>>> getFunkoGroupedByModels() {
-        return funkoService.getFunkoGroupedByModels();
-    }
-
-    /**
-     * Devuelve los Funkos lanzados en un año
-     *
-     * @param year año
-     * @return Funkos lanzados en un año
-     */
-    public Flux<Funko> getFunkoReleasedIn(int year) {
-        return funkoService.getFunkoReleasedIn(year);
     }
 
     /**
@@ -198,10 +147,8 @@ public class FunkoController implements BaseController<Funko, UUID> {
      *
      * @param url      url de la base de datos
      * @param fileName nombre del archivo
-     * @throws SQLException si hay un error en la base de datos
-     * @throws IOException  si hay un error en el archivo
      */
-    public Mono<Void> exportData(String url, String fileName) throws SQLException, IOException, FunkoNotFoundException {
+    public Mono<Void> exportData(String url, String fileName) {
         return findAll()
                 .collectList()
                 .flatMap(dataList -> {

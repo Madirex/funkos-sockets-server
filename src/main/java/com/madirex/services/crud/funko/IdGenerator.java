@@ -38,11 +38,8 @@ public class IdGenerator {
      */
     public int newId() {
         lock.lock();
-        try {
-            counter++;
-            return counter;
-        } finally {
-            lock.unlock();
-        }
+        counter++;
+        lock.unlock();
+        return counter;
     }
 }

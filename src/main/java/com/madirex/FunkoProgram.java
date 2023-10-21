@@ -20,7 +20,10 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoSink;
+import reactor.core.scheduler.Schedulers;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -31,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -38,13 +42,16 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class FunkoProgram {
 
+    public static final String INSERT_ERROR_MSG = "Error al insertar el Funko en la base de datos: ";
+    public static final String KEY_FILE_PROPERTY = "keyFile";
+    public static final String KEY_PASSWORD_PROPERTY = "keyPassword";
     private static FunkoProgram funkoProgramInstance;
     private static final AtomicLong clientNumber = new AtomicLong(0);
     private static final Logger logger = LoggerFactory.getLogger(FunkoProgram.class);
     private static final FunkoControllerImpl controller = FunkoControllerImpl.getInstance(FunkoServiceImpl
             .getInstance(FunkoRepositoryImpl.getInstance(IdGenerator.getInstance(), DatabaseManager.getInstance()),
                     new FunkoCacheImpl(15, 90),
-                    new BackupService(), FunkoNotificationImpl.getInstance()));
+                    new BackupService<>(), FunkoNotificationImpl.getInstance()));
 
     /**
      * Constructor privado para evitar la creación de instancia
@@ -70,12 +77,12 @@ public class FunkoProgram {
      */
     public void init() {
         logger.info("Programa de Funkos iniciado.");
-        loadNotificationSystem();
+        Disposable notificationSystem = loadNotificationSystem();
         addDefaultUsers();
         var loadAndUploadFunkos = loadFunkosFileAndInsertToDatabase("data" + File.separator + "funkos.csv");
         loadAndUploadFunkos.block();
         logger.info("Funkos cargados en la base de datos.");
-        initServer();
+        initServer(notificationSystem);
     }
 
     /**
@@ -99,28 +106,55 @@ public class FunkoProgram {
 
     /**
      * Inicia el servidor
+     *
+     * @param notificationSystem Disposable del sistema de notificaciones
      */
-    private void initServer() {
-        try {
-            var myConfig = readConfigFile();
-            logger.debug("Configurando TSL");
-            System.setProperty("javax.net.ssl.keyStore", myConfig.get("keyFile")); // Llavero
-            System.setProperty("javax.net.ssl.keyStorePassword", myConfig.get("keyPassword")); // Clave de acceso
-            SSLServerSocketFactory serverFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-            SSLServerSocket serverSocket = (SSLServerSocket) serverFactory.createServerSocket(Integer.parseInt(myConfig.get("port")));
+    private void initServer(Disposable notificationSystem) {
+        var myConfig = readConfigFile();
+        logger.debug("Configurando TSL");
+        System.setProperty("javax.net.ssl.keyStore", myConfig.get(KEY_FILE_PROPERTY));
+        System.setProperty("javax.net.ssl.keyStorePassword", myConfig.get(KEY_PASSWORD_PROPERTY));
+        SSLServerSocketFactory serverFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+        try (SSLServerSocket serverSocket = (SSLServerSocket) serverFactory
+                .createServerSocket(Integer.parseInt(myConfig.get("port")))) {
             String str = "Protocolos soportados: " + Arrays.toString(serverSocket.getSupportedProtocols());
             logger.debug(str);
             serverSocket.setEnabledCipherSuites(new String[]{"TLS_AES_128_GCM_SHA256"});
             serverSocket.setEnabledProtocols(new String[]{"TLSv1.3"});
             logger.debug("🚀 Servidor escuchando en el puerto 3000");
-            while (true) {
-                new ClientHandler(serverSocket.accept(), clientNumber.incrementAndGet(), controller, myConfig).start();
-            }
+            AtomicBoolean exit = new AtomicBoolean(false);
+            Flux<String> userInputFlux = Mono.create((MonoSink<String> sink) -> {
+                Scanner scanner = new Scanner(System.in);
+                logger.info("Escribe exit para salir.");
+                while (!exit.get()) {
+                    String userInput = scanner.nextLine();
+                    if (userInput.equalsIgnoreCase("exit")) {
+                        exit.set(true);
+                        notificationSystem.dispose();
+                        logger.debug("Cerrando servidor...");
+                    }
+                    sink.success(userInput);
+                }
+                scanner.close();
+            }).flux();
+            Flux<ClientHandler> clientHandlerFlux = Flux.generate(sink -> Mono.fromCallable(() -> new ClientHandler(serverSocket.accept(),
+                            clientNumber.incrementAndGet(), controller, myConfig))
+                    .subscribeOn(Schedulers.boundedElastic())
+                    .subscribe(
+                            sink::next,
+                            sink::error
+                    ));
+
+            clientHandlerFlux.takeUntilOther(userInputFlux).subscribe(ClientHandler::start);
         } catch (IOException e) {
             String msg = "Error: " + e.getMessage();
             logger.error(msg);
+        } finally {
+            controller.shutdown();
+            logger.info("Programa de Funkos finalizado.");
         }
     }
+
 
     /**
      * Carga el sistema de notificaciones
@@ -161,17 +195,24 @@ public class FunkoProgram {
                         try {
                             return controller.save(funko)
                                     .onErrorResume(e -> {
-                                        String str = "Error al insertar el Funko en la base de datos: " + e.getMessage();
+                                        String str = INSERT_ERROR_MSG + e.getMessage();
                                         logger.error(str);
                                         return Mono.empty();
                                     });
-                        } catch (SQLException | FunkoNotSavedException | FunkoNotValidException e) {
-                            throw new RuntimeException(e);
+                        } catch (SQLException | FunkoNotSavedException e) {
+                            String stre = INSERT_ERROR_MSG + e.getMessage();
+                            logger.error(stre);
+                        } catch (FunkoNotValidException e) {
+                            String stre = "Error al insertar el Funko en la base de datos (Funko no válido): " + e.getMessage();
+                            logger.error(stre);
                         }
+                        return Mono.empty();
                     })
                     .then();
         } catch (ReadCSVFailException e) {
-            throw new RuntimeException(e);
+            String str = "Error al leer el fichero CSV: " + e.getMessage();
+            logger.error(str);
+            return Mono.empty();
         }
     }
 
@@ -186,9 +227,9 @@ public class FunkoProgram {
             ApplicationProperties properties = ApplicationProperties.getInstance();
 
             String keyFile = properties.readProperty(ApplicationProperties.PropertyType.SERVER,
-                    "keyFile", "./cert/server_keystore.p12");
+                    KEY_FILE_PROPERTY, "./cert/server_keystore.p12");
             String keyPassword = properties.readProperty(ApplicationProperties.PropertyType.SERVER,
-                    "keyPassword", "password");
+                    KEY_PASSWORD_PROPERTY, "password");
             String tokenSecret = properties.readProperty(ApplicationProperties.PropertyType.SERVER,
                     "tokenSecret", "ñfj08354hgoiepmñlhñeoñe5jop.-45yh4");
             String tokenExpiration = properties.readProperty(ApplicationProperties.PropertyType.SERVER,
@@ -205,8 +246,8 @@ public class FunkoProgram {
             }
 
             Map<String, String> configMap = new HashMap<>();
-            configMap.put("keyFile", keyFile);
-            configMap.put("keyPassword", keyPassword);
+            configMap.put(KEY_FILE_PROPERTY, keyFile);
+            configMap.put(KEY_PASSWORD_PROPERTY, keyPassword);
             configMap.put("tokenSecret", tokenSecret);
             configMap.put("tokenExpiration", tokenExpiration);
             configMap.put("port", port);

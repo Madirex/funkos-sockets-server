@@ -70,11 +70,12 @@ public class TokenService {
             JWTVerifier verifier = JWT.require(algorithm).build();
             DecodedJWT decodedJWT = verifier.verify(token);
             logger.debug("Token verificado");
-            return decodedJWT.getClaim("userid").asLong() == user.id() &&
-                    decodedJWT.getClaim("username").asString().equals(user.username()) &&
-                    decodedJWT.getClaim("rol").asString().equals(user.role().toString());
+            return decodedJWT.getClaim("userid").asString().equalsIgnoreCase(user.id()) &&
+                    decodedJWT.getClaim("username").asString().equalsIgnoreCase(user.username()) &&
+                    decodedJWT.getClaim("rol").asString().equalsIgnoreCase(user.role().toString());
         } catch (Exception e) {
-            logger.error("Error al verificar el token: " + e.getMessage());
+            String stre = "Error al verificar el token: " + e.getMessage();
+            logger.error(stre);
             return false;
         }
     }

@@ -51,7 +51,7 @@ public class ClientHandler extends Thread {
     private final FunkoControllerImpl funkoController;
     private BufferedReader in;
     private PrintWriter out;
-    private Map<String, String> config;
+    private final Map<String, String> config;
 
 
     /**
@@ -81,6 +81,9 @@ public class ClientHandler extends Thread {
             while (true) {
                 clientInput = in.readLine();
                 String str = "Petición recibida en bruto: " + clientInput;
+                if (clientInput == null || clientInput.equals("exit")) {
+                    break;
+                }
                 logger.debug(str);
                 request = gson.fromJson(clientInput, Request.class);
                 handleRequest(request);
@@ -170,7 +173,7 @@ public class ClientHandler extends Thread {
     }
 
     /**
-     * Procesa la peticion de salida
+     * Procesa la petición de salida
      *
      * @throws IOException excepción de entrada/salida
      */

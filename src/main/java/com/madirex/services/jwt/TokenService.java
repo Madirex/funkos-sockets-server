@@ -8,13 +8,17 @@ import com.madirex.models.server.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.Date;
 
 /**
  * Servicio para la creación y verificación de tokens
  */
 public class TokenService {
-    private static TokenService INSTANCE = null;
+    public static final String TOKEN_VERIFICATION_ERROR_MSG = "Error al verificar el token: ";
+    public static final String TOKEN_VERIFICATION_MSG = "Token verificado";
+    public static final String TOKEN_VERIFICATION_PROCESS_MSG = "Verificando token";
+    private static TokenService instance = null;
     private final Logger logger = LoggerFactory.getLogger(TokenService.class);
 
     /**
@@ -28,11 +32,11 @@ public class TokenService {
      *
      * @return Instancia de la clase
      */
-    public synchronized static TokenService getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new TokenService();
+    public static synchronized TokenService getInstance() {
+        if (instance == null) {
+            instance = new TokenService();
         }
-        return INSTANCE;
+        return instance;
     }
 
     /**
@@ -64,17 +68,17 @@ public class TokenService {
      * @return True si el token es válido, false en caso contrario
      */
     public boolean verifyToken(String token, String tokenSecret, User user) {
-        logger.debug("Verificando token");
+        logger.debug(TOKEN_VERIFICATION_PROCESS_MSG);
         Algorithm algorithm = Algorithm.HMAC256(tokenSecret);
         try {
             JWTVerifier verifier = JWT.require(algorithm).build();
             DecodedJWT decodedJWT = verifier.verify(token);
-            logger.debug("Token verificado");
+            logger.debug(TOKEN_VERIFICATION_MSG);
             return decodedJWT.getClaim("userid").asString().equalsIgnoreCase(user.id()) &&
                     decodedJWT.getClaim("username").asString().equalsIgnoreCase(user.username()) &&
                     decodedJWT.getClaim("rol").asString().equalsIgnoreCase(user.role().toString());
         } catch (Exception e) {
-            String stre = "Error al verificar el token: " + e.getMessage();
+            String stre = TOKEN_VERIFICATION_ERROR_MSG + e.getMessage();
             logger.error(stre);
             return false;
         }
@@ -88,15 +92,16 @@ public class TokenService {
      * @return True si el token es válido, false en caso contrario
      */
     public boolean verifyToken(String token, String tokenSecret) {
-        logger.debug("Verificando token");
+        logger.debug(TOKEN_VERIFICATION_PROCESS_MSG);
         Algorithm algorithm = Algorithm.HMAC256(tokenSecret);
         try {
             JWTVerifier verifier = JWT.require(algorithm).build();
             verifier.verify(token);
-            logger.debug("Token verificado");
+            logger.debug(TOKEN_VERIFICATION_MSG);
             return true;
         } catch (Exception e) {
-            logger.error("Error al verificar el token: " + e.getMessage());
+            String stre = TOKEN_VERIFICATION_ERROR_MSG + e.getMessage();
+            logger.error(stre);
             return false;
         }
     }
@@ -109,16 +114,17 @@ public class TokenService {
      * @return Claims del token
      */
     public java.util.Map<String, com.auth0.jwt.interfaces.Claim> getClaims(String token, String tokenSecret) {
-        logger.debug("Verificando token");
+        logger.debug(TOKEN_VERIFICATION_PROCESS_MSG);
         Algorithm algorithm = Algorithm.HMAC256(tokenSecret);
         try {
             JWTVerifier verifier = JWT.require(algorithm).build();
             DecodedJWT decodedJWT = verifier.verify(token);
-            logger.debug("Token verificado");
+            logger.debug(TOKEN_VERIFICATION_MSG);
             return decodedJWT.getClaims();
         } catch (Exception e) {
-            logger.error("Error al verificar el token: " + e.getMessage());
-            return null;
+            String stre = TOKEN_VERIFICATION_ERROR_MSG + e.getMessage();
+            logger.error(stre);
+            return Collections.emptyMap();
         }
     }
 }

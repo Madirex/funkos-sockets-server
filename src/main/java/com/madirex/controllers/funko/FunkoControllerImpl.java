@@ -58,7 +58,7 @@ public class FunkoControllerImpl implements FunkoController {
     }
 
     /**
-     * Busca un Funko por id
+     * Busca un Funko por ID
      *
      * @param id id del Funko
      * @return Funko encontrado
@@ -143,39 +143,6 @@ public class FunkoControllerImpl implements FunkoController {
     }
 
     /**
-     * Exporta los datos de la base de datos a un archivo JSON
-     *
-     * @param url      url de la base de datos
-     * @param fileName nombre del archivo
-     */
-    public Mono<Void> exportData(String url, String fileName) {
-        return findAll()
-                .collectList()
-                .flatMap(dataList -> {
-                    try {
-                        var exp = funkoService.exportData(url, fileName, dataList);
-                        return exp.onErrorResume(e -> {
-                            logger.error("Error al exportar los datos: ", e);
-                            return Mono.empty();
-                        });
-                    } catch (SQLException e) {
-                        logger.error("Error al exportar los datos: ", e);
-                        return Mono.empty();
-                    }
-                });
-    }
-
-    /**
-     * Importa los datos de un archivo JSON a la base de datos
-     *
-     * @param url      url de la base de datos
-     * @param fileName nombre del archivo
-     */
-    public Flux<Funko> importData(String url, String fileName) {
-        return funkoService.importData(url, fileName);
-    }
-
-    /**
      * Cierra el caché
      */
     public void shutdown() {
@@ -183,7 +150,7 @@ public class FunkoControllerImpl implements FunkoController {
     }
 
     /**
-     * Recone las notificaciones
+     * Recibe las notificaciones
      *
      * @return Notificaciones
      */

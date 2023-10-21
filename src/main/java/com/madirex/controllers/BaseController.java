@@ -1,7 +1,7 @@
 package com.madirex.controllers;
 
-import com.madirex.exceptions.FunkoException;
-import com.madirex.exceptions.FunkoNotFoundException;
+import com.madirex.exceptions.funko.FunkoException;
+import com.madirex.exceptions.funko.FunkoNotFoundException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

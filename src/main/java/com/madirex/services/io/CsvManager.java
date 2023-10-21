@@ -1,6 +1,6 @@
 package com.madirex.services.io;
 
-import com.madirex.exceptions.ReadCSVFailException;
+import com.madirex.exceptions.io.ReadCSVFailException;
 import com.madirex.models.funko.Funko;
 import com.madirex.models.funko.Model;
 import reactor.core.publisher.Flux;

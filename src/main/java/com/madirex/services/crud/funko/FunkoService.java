@@ -1,6 +1,6 @@
 package com.madirex.services.crud.funko;
 
-import com.madirex.exceptions.FunkoNotFoundException;
+import com.madirex.exceptions.funko.FunkoNotFoundException;
 import com.madirex.models.funko.Funko;
 import com.madirex.models.funko.Model;
 import com.madirex.services.crud.BaseCRUDService;

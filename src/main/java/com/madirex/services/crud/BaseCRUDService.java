@@ -1,9 +1,9 @@
 package com.madirex.services.crud;
 
-import com.madirex.exceptions.FunkoNotFoundException;
-import com.madirex.exceptions.FunkoNotRemovedException;
-import com.madirex.exceptions.FunkoNotSavedException;
-import com.madirex.exceptions.FunkoNotValidException;
+import com.madirex.exceptions.funko.FunkoNotFoundException;
+import com.madirex.exceptions.funko.FunkoNotRemovedException;
+import com.madirex.exceptions.funko.FunkoNotSavedException;
+import com.madirex.exceptions.funko.FunkoNotValidException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

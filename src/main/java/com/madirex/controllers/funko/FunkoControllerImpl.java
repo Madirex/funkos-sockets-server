@@ -1,7 +1,7 @@
 package com.madirex.controllers.funko;
 
-import com.madirex.exceptions.FunkoNotSavedException;
-import com.madirex.exceptions.FunkoNotValidException;
+import com.madirex.exceptions.funko.FunkoNotSavedException;
+import com.madirex.exceptions.funko.FunkoNotValidException;
 import com.madirex.models.Notification;
 import com.madirex.models.funko.Funko;
 import com.madirex.models.funko.Model;

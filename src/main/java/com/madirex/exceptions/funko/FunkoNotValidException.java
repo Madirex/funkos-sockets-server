@@ -1,4 +1,4 @@
-package com.madirex.exceptions;
+package com.madirex.exceptions.funko;
 
 /**
  * Excepción al no ser válido un Funko

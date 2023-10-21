@@ -1,4 +1,4 @@
-package com.madirex.exceptions;
+package com.madirex.exceptions.io;
 
 /**
  * Excepción al exportar datos

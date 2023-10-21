@@ -1,6 +1,6 @@
 package com.madirex.validators;
 
-import com.madirex.exceptions.FunkoNotValidException;
+import com.madirex.exceptions.funko.FunkoNotValidException;
 import com.madirex.models.funko.Funko;
 
 /**

@@ -28,7 +28,7 @@ public class FunkoServiceImpl implements FunkoService<List<Funko>> {
     private final FunkoCache cache;
     private final Logger logger = LoggerFactory.getLogger(FunkoServiceImpl.class);
     private final FunkoRepositoryImpl funkoRepository;
-    private final BackupService<List<Funko>> backupService;
+    private final BackupService<Funko> backupService;
     private final FunkoNotificationImpl funkoNotification;
 
     /**
@@ -40,7 +40,7 @@ public class FunkoServiceImpl implements FunkoService<List<Funko>> {
      * @param funkoNotification Instancia de la clase FunkoNotification
      */
     private FunkoServiceImpl(FunkoRepositoryImpl funkoRepository, FunkoCache cache,
-                             BackupService<List<Funko>> backupService, FunkoNotificationImpl funkoNotification) {
+                             BackupService<Funko> backupService, FunkoNotificationImpl funkoNotification) {
         this.funkoRepository = funkoRepository;
         this.cache = cache;
         this.backupService = backupService;
@@ -58,7 +58,7 @@ public class FunkoServiceImpl implements FunkoService<List<Funko>> {
      */
     public static synchronized FunkoServiceImpl getInstance(FunkoRepositoryImpl funkoRepository,
                                                             FunkoCache cache,
-                                                            BackupService<List<Funko>> backupService,
+                                                            BackupService<Funko> backupService,
                                                             FunkoNotificationImpl funkoNotification) {
         if (funkoServiceImplInstance == null) {
             funkoServiceImplInstance = new FunkoServiceImpl(funkoRepository, cache, backupService, funkoNotification);

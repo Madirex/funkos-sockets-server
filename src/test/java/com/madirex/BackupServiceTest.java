@@ -19,11 +19,11 @@ import static org.mockito.Mockito.*;
  * Clase BackupServiceTest
  */
 public class BackupServiceTest {
-    private BackupService<List<Funko>> backupService;
+    private BackupService<Funko> backupService;
 
     @BeforeEach
     public void setUp() {
-        backupService = BackupService.getInstance();
+        backupService = new BackupService();
     }
 
     /**

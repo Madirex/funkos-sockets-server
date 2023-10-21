@@ -1,9 +1,12 @@
 package com.madirex.models.server;
 
+import lombok.Builder;
+
 /**
  * Modelo de usuario
  */
-public record User(long id, String username, String password, Role role) {
+@Builder
+public record User(String id, String username, String password, Role role) {
     /**
      * Enumerado de roles
      */

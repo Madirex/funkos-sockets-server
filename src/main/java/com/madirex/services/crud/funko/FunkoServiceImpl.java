@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
@@ -125,10 +124,9 @@ public class FunkoServiceImpl implements FunkoService<List<Funko>> {
      * @param path     Ruta del directorio donde se guardará el backup
      * @param fileName Nombre del archivo del backup
      * @param data     Datos a guardar
-     * @throws SQLException Si hay un error en la base de datos
      */
     @Override
-    public Mono<Void> exportData(String path, String fileName, List<Funko> data) throws SQLException {
+    public Mono<Void> exportData(String path, String fileName, List<Funko> data) {
         return findAll().collectList().flatMap(s -> backupService.exportData(path, fileName, s));
     }
 
@@ -204,7 +202,7 @@ public class FunkoServiceImpl implements FunkoService<List<Funko>> {
                 .flatMap(funko -> cache.remove(funko.getCod().toString())
                         .then(funkoRepository.delete(funko.getCod()))
                         .thenReturn(funko))
-                .onErrorResume(ex -> Mono.error(new FunkoNotRemovedException(FUNKO_WITH_ID_MSG + id + " no eiminado")))
+                .onErrorResume(ex -> Mono.error(new FunkoNotRemovedException(FUNKO_WITH_ID_MSG + id + " no eliminado")))
                 .doOnSuccess(saved -> funkoNotification.notify(new Notification<>(Notification.Type.DELETED, saved)));
     }
 

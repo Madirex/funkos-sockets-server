@@ -60,13 +60,14 @@ public class FunkoRepositoryImpl implements FunkoRepository {
                 connection -> Flux.from(connection.createStatement(sql).execute())
                         .flatMap(result -> result.map((row, rowMetadata) ->
                                 {
-                                    Double price = row.get("precio", BigDecimal.class).doubleValue();
+                                    double price = Objects.requireNonNull(row.get("precio", BigDecimal.class))
+                                            .doubleValue();
                                     return Funko.builder()
                                             .cod(UUID.fromString(Objects.requireNonNull(row.get("cod", UUID.class)).toString()))
                                             .myId(row.get("myId", Long.class))
                                             .name(row.get("nombre", String.class))
                                             .model(Model.valueOf(row.get("modelo", String.class)))
-                                            .price(price != null ? price : 0.0)
+                                            .price(price)
                                             .releaseDate(row.get("fecha_lanzamiento", LocalDate.class))
                                             .updateAt(row.get("updated_at", LocalDateTime.class))
                                             .build();
@@ -92,13 +93,13 @@ public class FunkoRepositoryImpl implements FunkoRepository {
                         .execute()
                 ).flatMap(result -> Mono.from(result.map((row, rowMetadata) ->
                         {
-                            Double price = row.get("precio", BigDecimal.class).doubleValue();
+                            double price = Objects.requireNonNull(row.get("precio", BigDecimal.class)).doubleValue();
                             return Funko.builder()
                                     .cod(Objects.requireNonNull(row.get("cod", UUID.class)))
                                     .myId(row.get("myId", Long.class))
                                     .name(row.get("nombre", String.class))
                                     .model(Model.valueOf(row.get("modelo", String.class)))
-                                    .price(price != null ? price : 0.0)
+                                    .price(price)
                                     .releaseDate(row.get("fecha_lanzamiento", LocalDate.class))
                                     .updateAt(row.get("updated_at", LocalDateTime.class))
                                     .build();

@@ -5,11 +5,6 @@ package com.madirex.exceptions.funko;
  */
 public class FunkoNotFoundException extends FunkoException {
     public FunkoNotFoundException(String message) {
-        /**
-         * Constructor
-         *
-         * @param message mensaje de error
-         */
         super("Funko/a no encontrado: " + message);
     }
 }

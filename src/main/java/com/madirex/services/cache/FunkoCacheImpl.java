@@ -32,7 +32,7 @@ public class FunkoCacheImpl implements FunkoCache {
      */
     public FunkoCacheImpl(int maxSize, long secondsToClear) {
         this.secondsToClear = secondsToClear;
-        this.cache = new LinkedHashMap<String, Funko>(maxSize, 0.75f, true) {
+        this.cache = new LinkedHashMap<>(maxSize, 0.75f, true) {
             @Override
             protected boolean removeEldestEntry(Map.Entry<String, Funko> eldest) {
                 return size() > maxSize;

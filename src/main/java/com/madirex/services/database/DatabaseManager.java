@@ -110,7 +110,7 @@ public class DatabaseManager {
                 connectionFactory.create(),
                 connection -> {
                     logger.debug("Creando conexión con la base de datos");
-                    String scriptContent = null;
+                    String scriptContent;
                     try {
                         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(scriptSqlFile)) {
                             if (inputStream == null) {
@@ -134,8 +134,6 @@ public class DatabaseManager {
     /**
      * Inicializa la base de datos con los datos del fichero init.sql y remove.sql
      * Solo si el properties tiene la propiedad db.init en TRUE
-     *
-     * @throws IOException Error al leer el fichero de inicialización
      */
     public synchronized void initData() {
         if (!dataInitialized && initScript.equalsIgnoreCase("true")) {

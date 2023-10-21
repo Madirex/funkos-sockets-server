@@ -10,7 +10,7 @@ public class IdGenerator {
 
     private static IdGenerator idGeneratorInstance;
     private int counter = 0;
-    private Lock lock = new ReentrantLock();
+    private final Lock lock = new ReentrantLock();
 
     /**
      * Constructor de la clase

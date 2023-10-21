@@ -185,14 +185,26 @@ public class FunkoRepositoryImpl implements FunkoRepository {
     }
 
     /**
-     * Busca un elemento en el repositorio por su nombre
+     * Busca elementos en el repositorio por su modelo
      *
-     * @param name Nombre del elemento a buscar
+     * @param model Modelo de los elementos a buscar
      * @return Lista de elementos encontrados
      */
     @Override
-    public Flux<Funko> findByName(String name) {
+    public Flux<Funko> findByModel(Model model) {
         return findAll()
-                .filter(funko -> funko.getName().equalsIgnoreCase(name.toLowerCase()));
+                .filter(funko -> funko.getModel().name().equalsIgnoreCase(model.name()));
+    }
+
+    /**
+     * Busca elementos en el repositorio por su año de lanzamiento
+     *
+     * @param year Año de lanzamiento de los elementos a buscar
+     * @return Lista de elementos encontrados
+     */
+    @Override
+    public Flux<Funko> findByReleaseYear(Integer year) {
+        return findAll()
+                .filter(funko -> funko.getReleaseDate().getYear() == year);
     }
 }

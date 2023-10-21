@@ -131,16 +131,16 @@ class FunkosRepositoryTestDB {
     }
 
     /**
-     * Test para comprobar FindByName
+     * Test para comprobar FindByModel
      *
      * @throws SQLException Si hay un error en la base de datos
      */
     @Test
-    void testFindFunkosByName() throws SQLException {
+    void testFindFunkosByModel() throws SQLException {
         LocalDate date = LocalDate.now();
         Funko funko1 = Funko.builder()
                 .name("test1")
-                .model(Model.ANIME)
+                .model(Model.OTROS)
                 .price(42.23)
                 .releaseDate(date)
                 .build();
@@ -150,11 +150,62 @@ class FunkosRepositoryTestDB {
                 .price(81.23)
                 .releaseDate(date)
                 .build();
-
+        Funko funko3 = Funko.builder()
+                .name("test3")
+                .model(Model.ANIME)
+                .price(81.23)
+                .releaseDate(date)
+                .build();
         funkoRepository.save(funko1).block();
         funkoRepository.save(funko2).block();
-        List<Funko> foundFunkos = funkoRepository.findByName("test1").collectList().block();
+        funkoRepository.save(funko3).block();
+        List<Funko> foundFunkos = funkoRepository.findByModel(Model.OTROS).collectList().block();
+        assert foundFunkos != null;
+        assertAll("Funkos encontrados",
+                () -> assertNotNull(foundFunkos, "La lista de Funkos no debe ser nula"),
+                () -> assertEquals(2, foundFunkos.size(), "El número de Funkos encontrados no coincide con el esperado"),
+                () -> assertEquals(funko1.getName(), foundFunkos.get(0).getName(), "Nombre del primer Funko no coincide"),
+                () -> assertEquals(funko1.getPrice(), foundFunkos.get(0).getPrice(), "Precio del primer Funko no coincide"),
+                () -> assertEquals(funko1.getReleaseDate(), foundFunkos.get(0).getReleaseDate(), "Fecha de lanzamiento del primer Funko no coincide"),
+                () -> assertEquals(funko1.getModel(), foundFunkos.get(0).getModel(), "Modelo del primer Funko no coincide"),
+                () -> assertEquals(funko2.getName(), foundFunkos.get(1).getName(), "Nombre del segundo Funko no coincide"),
+                () -> assertEquals(funko2.getPrice(), foundFunkos.get(1).getPrice(), "Precio del segundo Funko no coincide"),
+                () -> assertEquals(funko2.getReleaseDate(), foundFunkos.get(1).getReleaseDate(), "Fecha de lanzamiento del segundo Funko no coincide"),
+                () -> assertEquals(funko2.getModel(), foundFunkos.get(1).getModel(), "Modelo del segundo Funko no coincide")
+        );
+    }
 
+    /**
+     * Test para comprobar FindByReleaseYear
+     *
+     * @throws SQLException Si hay un error en la base de datos
+     */
+    @Test
+    void testFindFunkosByReleaseYear() throws SQLException {
+        LocalDate date = LocalDate.now();
+        Funko funko1 = Funko.builder()
+                .name("test1")
+                .model(Model.OTROS)
+                .price(42.23)
+                .releaseDate(date)
+                .build();
+        Funko funko2 = Funko.builder()
+                .name("test1")
+                .model(Model.OTROS)
+                .price(81.23)
+                .releaseDate(date)
+                .build();
+        Funko funko3 = Funko.builder()
+                .name("test3")
+                .model(Model.ANIME)
+                .price(81.23)
+                .releaseDate(LocalDate.of(1990, 1, 1))
+                .build();
+        funkoRepository.save(funko1).block();
+        funkoRepository.save(funko2).block();
+        funkoRepository.save(funko3).block();
+        List<Funko> foundFunkos = funkoRepository.findByReleaseYear(date.getYear()).collectList().block();
+        assert foundFunkos != null;
         assertAll("Funkos encontrados",
                 () -> assertNotNull(foundFunkos, "La lista de Funkos no debe ser nula"),
                 () -> assertEquals(2, foundFunkos.size(), "El número de Funkos encontrados no coincide con el esperado"),

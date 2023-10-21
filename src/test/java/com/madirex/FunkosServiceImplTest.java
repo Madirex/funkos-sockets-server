@@ -66,30 +66,70 @@ class FunkosServiceImplTest {
     }
 
     /**
-     * Test para FindByName
+     * Test para FindByModel
      */
     @Test
-    void testFindByName() {
+    void testFindByModel() {
         var funkos = List.of(Funko.builder().name("cuack").price(12.42).releaseDate(LocalDate.now()).model(Model.DISNEY).build());
-        when(repository.findByName("cuack")).thenReturn(Flux.fromIterable(funkos));
-        List<Funko> result = service.findByName("cuack").collectList().block();
-        assertAll("findByName",
+        when(repository.findByModel(Model.DISNEY)).thenReturn(Flux.fromIterable(funkos));
+        List<Funko> result = service.findByModel(Model.DISNEY).collectList().block();
+        assert result != null;
+        assertAll("findByModel",
                 () -> assertEquals(result.get(0).getName(), funkos.get(0).getName(), "El Funko no tiene el nombre esperado"),
                 () -> assertEquals(result.get(0).getPrice(), funkos.get(0).getPrice(), "El precio del Funko no es el esperado"),
                 () -> assertEquals(result.get(0).getReleaseDate(), funkos.get(0).getReleaseDate(), "La fecha de lanzamiento del Funko no es la esperada"),
                 () -> assertEquals(result.get(0).getModel(), funkos.get(0).getModel(), "El modelo del Funko no es el esperado")
         );
-        verify(repository, times(1)).findByName("cuack");
+        verify(repository, times(1)).findByModel(Model.DISNEY);
     }
 
     /**
-     * Test Find By Name que no encuentra el Funko dado el nombre
+     * Test FindByModel Not Found
      */
     @Test
-    void testFindByNameNotFound() {
-        String name = "Unicorn Funko";
-        when(repository.findByName(name)).thenReturn(Flux.empty());
-        Flux<Funko> result = service.findByName(name);
+    void testFindByModelNotFound() {
+        Model model = Model.DISNEY;
+        when(repository.findByModel(Model.DISNEY)).thenReturn(Flux.empty());
+        Flux<Funko> result = service.findByModel(model);
+        try {
+            result.blockLast();
+            fail("Se esperaba una excepción FunkoNotFoundException");
+        } catch (RuntimeException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof FunkoNotFoundException) {
+            } else {
+                fail("Se esperaba una excepción FunkoNotFoundException");
+            }
+        }
+    }
+
+    /**
+     * Test para FindByReleaseYear
+     */
+    @Test
+    void testFindByReleaseYear() {
+        LocalDate date = LocalDate.now();
+        var funkos = List.of(Funko.builder().name("cuack").price(12.42).releaseDate(date).model(Model.DISNEY).build());
+        when(repository.findByReleaseYear(date.getYear())).thenReturn(Flux.fromIterable(funkos));
+        List<Funko> result = service.findByReleaseYear(date.getYear()).collectList().block();
+        assert result != null;
+        assertAll("findByReleaseYear",
+                () -> assertEquals(result.get(0).getName(), funkos.get(0).getName(), "El Funko no tiene el nombre esperado"),
+                () -> assertEquals(result.get(0).getPrice(), funkos.get(0).getPrice(), "El precio del Funko no es el esperado"),
+                () -> assertEquals(result.get(0).getReleaseDate(), funkos.get(0).getReleaseDate(), "La fecha de lanzamiento del Funko no es la esperada"),
+                () -> assertEquals(result.get(0).getModel(), funkos.get(0).getModel(), "El modelo del Funko no es el esperado")
+        );
+        verify(repository, times(1)).findByReleaseYear(date.getYear());
+    }
+
+    /**
+     * Test FindByReleaseYear Not Found
+     */
+    @Test
+    void testFindByReleaseYearNotFound() {
+        Integer year = 1990;
+        when(repository.findByReleaseYear(year)).thenReturn(Flux.empty());
+        Flux<Funko> result = service.findByReleaseYear(year);
         try {
             result.blockLast();
             fail("Se esperaba una excepción FunkoNotFoundException");

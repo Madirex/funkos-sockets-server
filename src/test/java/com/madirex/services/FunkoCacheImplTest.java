@@ -1,4 +1,4 @@
-package com.madirex;
+package com.madirex.services;
 
 import com.madirex.models.funko.Funko;
 import com.madirex.services.cache.FunkoCacheImpl;

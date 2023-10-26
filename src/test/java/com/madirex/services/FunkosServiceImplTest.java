@@ -1,4 +1,4 @@
-package com.madirex;
+package com.madirex.services;
 
 import com.madirex.exceptions.funko.FunkoNotFoundException;
 import com.madirex.models.Notification;

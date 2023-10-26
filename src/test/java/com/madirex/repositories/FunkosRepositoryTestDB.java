@@ -1,4 +1,4 @@
-package com.madirex;
+package com.madirex.repositories;
 
 import com.madirex.models.funko.Funko;
 import com.madirex.models.funko.Model;

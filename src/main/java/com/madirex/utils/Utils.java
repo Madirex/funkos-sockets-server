@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Optional;
 
 /**
  * Clase Utils que contiene métodos útiles para la aplicación
@@ -49,15 +48,10 @@ public class Utils {
      *
      * @param dataFile Archivo del que se quieren obtener los bytes
      * @return Bytes del archivo
+     * @throws IOException Excepción al leer el archivo
      */
-    public Optional<byte[]> getFileBytes(File dataFile) {
-        try {
-            return Optional.of(Files.readAllBytes(dataFile.toPath()));
-        } catch (IOException e) {
-            String stre = "Error al leer el archivo: " + e.getMessage();
-            logger.error(stre);
-            return Optional.empty();
-        }
+    public byte[] getFileBytes(File dataFile) throws IOException {
+        return Files.readAllBytes(dataFile.toPath());
     }
 
     /**

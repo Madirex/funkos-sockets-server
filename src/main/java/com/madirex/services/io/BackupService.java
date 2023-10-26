@@ -78,10 +78,7 @@ public class BackupService<T> {
                     File dataFile = new File(path + File.separator + fileName);
 
                     var bytes = Utils.getInstance().getFileBytes(dataFile);
-                    if (bytes.isEmpty()) {
-                        throw new ImportDataException("No se ha podido leer el archivo.");
-                    }
-                    String json = Arrays.toString(bytes.get());
+                    String json = Arrays.toString(bytes);
                     Type listType = new TypeToken<List<T>>() {
                     }.getType();
                     Gson gson = new GsonBuilder()

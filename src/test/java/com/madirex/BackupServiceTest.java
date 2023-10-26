@@ -1,8 +1,10 @@
 package com.madirex;
 
+import com.madirex.exceptions.io.ImportDataException;
 import com.madirex.models.funko.Funko;
 import com.madirex.models.funko.Model;
 import com.madirex.services.io.BackupService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,19 +20,19 @@ import static org.mockito.Mockito.*;
 /**
  * Clase BackupServiceTest
  */
-public class BackupServiceTest {
+class BackupServiceTest {
     private BackupService<Funko> backupService;
 
     @BeforeEach
     public void setUp() {
-        backupService = new BackupService();
+        backupService = new BackupService<>();
     }
 
     /**
      * Test para comprobar que se puede exportar los datos
      */
     @Test
-    public void testExportData() {
+    void testExportData() {
         File mockFile = mock(File.class);
         when(mockFile.toPath()).thenReturn(Paths.get("mock/path"));
         File mockDataDir = mock(File.class);
@@ -50,7 +52,7 @@ public class BackupServiceTest {
 
         var result = backupService.exportData(System.getProperty("user.dir") + File.separator + "data", "backup-test.json", dataToExport);
         result.hasElement()
-                .doOnSuccess(hasElement -> assertFalse(hasElement))
+                .doOnSuccess(Assertions::assertFalse)
                 .block();
     }
 
@@ -59,7 +61,7 @@ public class BackupServiceTest {
      * Test para comprobar que se lanza una excepción cuando no se puede crear el directorio
      */
     @Test
-    public void testExportDataDirectoryException() {
+    void testExportDataDirectoryException() {
         File mockFile = mock(File.class);
         when(mockFile.exists()).thenReturn(false);
         when(mockFile.toPath()).thenReturn(Paths.get("ruta/inexistente"));
@@ -84,7 +86,7 @@ public class BackupServiceTest {
      * Test para comprobar que se puede importar los datos
      */
     @Test
-    public void testImportData() {
+    void testImportData() {
         String testFilePath = System.getProperty("user.dir") + File.separator + "data" + File.separator;
         File testDataFile = new File(testFilePath);
         assertTrue(testDataFile.exists());
@@ -93,11 +95,24 @@ public class BackupServiceTest {
         assertNotNull(result);
     }
 
+    @Test
+    void testImportDataException() {
+        String testFilePath = System.getProperty("user.dir") + File.separator + "data" + File.separator;
+        File testDataFile = new File(testFilePath);
+        assertTrue(testDataFile.exists());
+        assertThrows(Exception.class, () ->
+        {
+            var r = backupService.importData("ad", "no-existe.json");
+            r.subscribe();
+            r.then().block();
+        });
+    }
+
     /**
      * Test para comprobar que se lanza una excepción cuando no se puede leer el archivo
      */
     @Test
-    public void testImportDataDirectoryException() {
+    void testImportDataDirectoryException() {
         String nonExistentDirectory = "ruta/inexistente";
         String testFilePath = nonExistentDirectory + File.separator + "backup-test.json";
 

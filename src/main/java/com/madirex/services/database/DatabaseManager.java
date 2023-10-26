@@ -6,6 +6,7 @@ import io.r2dbc.pool.ConnectionPool;
 import io.r2dbc.pool.ConnectionPoolConfiguration;
 import io.r2dbc.spi.*;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -32,6 +33,7 @@ public class DatabaseManager {
     private String connectionUrl;
     private boolean dataInitialized = false;
     private final ConnectionFactory connectionFactory;
+
     @Getter
     private final ConnectionPool pool;
 
@@ -110,25 +112,32 @@ public class DatabaseManager {
                 connectionFactory.create(),
                 connection -> {
                     logger.debug("Creando conexión con la base de datos");
-                    String scriptContent;
-                    try {
-                        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(scriptSqlFile)) {
-                            if (inputStream == null) {
-                                return Mono.error(new IOException("No se ha encontrado el fichero de script de inicialización."));
-                            } else {
-                                try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-                                    scriptContent = reader.lines().collect(Collectors.joining("\n"));
-                                }
-                            }
-                        }
-                        Statement statement = connection.createStatement(scriptContent);
-                        return Mono.from(statement.execute());
-                    } catch (IOException e) {
-                        return Mono.error(e);
-                    }
+                    return getMonoExecuteInitScript(scriptSqlFile, connection);
                 },
                 Connection::close
         ).then();
+    }
+
+    /**
+     * Ejecuta el script de inicialización de la base de datos
+     *
+     * @param scriptSqlFile Fichero con el script de inicialización
+     * @param connection    Conexión con la base de datos
+     * @return Mono<Void> Resultado de la ejecución
+     */
+    @NotNull
+    private Mono<? extends Result> getMonoExecuteInitScript(String scriptSqlFile, Connection connection) {
+        String scriptContent;
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(scriptSqlFile)) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                scriptContent = reader.lines().collect(Collectors.joining("\n"));
+            }
+        } catch (IOException e) {
+            logger.error("Error al leer el script de inicialización de la base de datos");
+            return Mono.error(e);
+        }
+        Statement statement = connection.createStatement(scriptContent);
+        return Mono.from(statement.execute());
     }
 
     /**

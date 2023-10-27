@@ -10,10 +10,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Clase de test para la clase FunkoCacheImpl
  */
-public class FunkoCacheImplTest {
+class FunkoCacheImplTest {
 
     private FunkoCacheImpl cache;
-    private long secondsToClear = 1;
+    private final long secondsToClear = 1;
 
     /**
      * Inicializa la caché antes de cada test
@@ -27,7 +27,7 @@ public class FunkoCacheImplTest {
      * Test put and get
      */
     @Test
-    public void testPutAndGet() {
+    void testPutAndGet() {
         Funko funko = Funko.builder().build();
         cache.put("1", funko).block();
         assertEquals(funko, cache.get("1").block());
@@ -37,7 +37,7 @@ public class FunkoCacheImplTest {
      * Test remove
      */
     @Test
-    public void testRemove() {
+    void testRemove() {
         Funko funko = Funko.builder().build();
         cache.put("2", funko).block();
         cache.remove("2").block();
@@ -48,7 +48,7 @@ public class FunkoCacheImplTest {
      * Test shutdown
      */
     @Test
-    public void testShutdown() {
+    void testShutdown() {
         cache.shutdown();
         assertTrue(cache.getCleaner().isShutdown());
     }
@@ -59,7 +59,7 @@ public class FunkoCacheImplTest {
      * @throws InterruptedException si hay un error de interrupción
      */
     @Test
-    public void testClear() throws InterruptedException {
+    void testClear() throws InterruptedException {
         Funko funko = Funko.builder().build();
         cache.put("1", funko).block();
         Thread.sleep(secondsToClear * 1000);

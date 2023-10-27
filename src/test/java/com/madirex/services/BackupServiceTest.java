@@ -1,6 +1,5 @@
 package com.madirex.services;
 
-import com.madirex.exceptions.io.ImportDataException;
 import com.madirex.models.funko.Funko;
 import com.madirex.models.funko.Model;
 import com.madirex.services.io.BackupService;
@@ -95,6 +94,9 @@ class BackupServiceTest {
         assertNotNull(result);
     }
 
+    /**
+     * Test para comprobar que se lanza una excepción cuando no se puede leer el archivo
+     */
     @Test
     void testImportDataException() {
         String testFilePath = System.getProperty("user.dir") + File.separator + "data" + File.separator;

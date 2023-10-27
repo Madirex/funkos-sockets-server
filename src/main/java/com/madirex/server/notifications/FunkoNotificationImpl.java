@@ -48,10 +48,9 @@ public class FunkoNotificationImpl implements FunkoNotification {
      * Notifica a los suscriptores de la notificación
      *
      * @param notification Notificación a enviar
-     * @return
      */
     @Override
-    public FluxSink<Notification<Funko>> notify(Notification<Funko> notification) {
-        return fluxNotification.next(notification);
+    public void notify(Notification<Funko> notification) {
+        fluxNotification.next(notification);
     }
 }

@@ -85,8 +85,7 @@ public class BackupService<T> {
                             .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
                             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
                             .create();
-                    List<T> funkoList = gson.fromJson(json, listType);
-                    return funkoList;
+                    return gson.<List<T>>fromJson(json, listType);
                 })
                 .flatMapMany(Flux::fromIterable)
                 .onErrorMap(ex -> new ImportDataException(ex.getMessage()));

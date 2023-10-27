@@ -5,10 +5,10 @@ import com.madirex.models.Notification;
 import com.madirex.models.funko.Funko;
 import com.madirex.models.funko.Model;
 import com.madirex.repositories.funko.FunkoRepositoryImpl;
+import com.madirex.server.notifications.FunkoNotificationImpl;
 import com.madirex.services.cache.FunkoCacheImpl;
 import com.madirex.services.crud.funko.FunkoServiceImpl;
 import com.madirex.services.io.BackupService;
-import com.madirex.server.notifications.FunkoNotificationImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -49,12 +48,15 @@ class FunkosServiceImplTest {
      */
     @Test
     void testFindAll() {
+        notification = FunkoNotificationImpl.getInstance();
         var funkos = List.of(
                 Funko.builder().name("test1").price(42.0).build(),
                 Funko.builder().name("test2").price(42.24).build()
         );
         when(repository.findAll()).thenReturn(Flux.fromIterable(funkos));
         List<Funko> result = service.findAll().collectList().block();
+        assertNotNull(result);
+        assertNotNull(notification);
         assertAll("findAll",
                 () -> assertEquals(2, result.size(), "No se han recuperado 2 Funkos"),
                 () -> assertEquals("test1", result.get(0).getName(), "El primer Funko no es el esperado"),
@@ -96,10 +98,8 @@ class FunkosServiceImplTest {
             fail("Se esperaba una excepción FunkoNotFoundException");
         } catch (RuntimeException e) {
             Throwable cause = e.getCause();
-            if (cause instanceof FunkoNotFoundException) {
-            } else {
-                fail("Se esperaba una excepción FunkoNotFoundException");
-            }
+            assertTrue(cause instanceof FunkoNotFoundException,
+                    "Se esperaba una excepción FunkoNotFoundException");
         }
     }
 
@@ -135,10 +135,7 @@ class FunkosServiceImplTest {
             fail("Se esperaba una excepción FunkoNotFoundException");
         } catch (RuntimeException e) {
             Throwable cause = e.getCause();
-            if (cause instanceof FunkoNotFoundException) {
-            } else {
-                fail("Se esperaba una excepción FunkoNotFoundException");
-            }
+            assertTrue(cause instanceof FunkoNotFoundException, "Se esperaba una excepción FunkoNotFoundException");
         }
     }
 
@@ -157,11 +154,9 @@ class FunkosServiceImplTest {
 
     /**
      * Test para exportData
-     *
-     * @throws SQLException Si hay un error en la base de datos
      */
     @Test
-    void testExportData() throws SQLException {
+    void testExportData() {
         String path = "testPath";
         String fileName = "testFile";
         List<Funko> testData = List.of(Funko.builder().build());
@@ -181,6 +176,7 @@ class FunkosServiceImplTest {
         when(repository.findById(id)).thenReturn(Mono.just(funko));
         when(cache.get(id.toString())).thenReturn(Mono.just(funko));
         var result = service.findById(id).block();
+        assertNotNull(result);
         assertAll("findByName",
                 () -> assertEquals(result.getName(), funko.getName(), "El Funko no tiene el nombre esperado"),
                 () -> assertEquals(result.getPrice(), funko.getPrice(), "El precio del Funko no es el esperado"),
@@ -214,6 +210,7 @@ class FunkosServiceImplTest {
         var funko = Funko.builder().name("cuack").price(12.42).releaseDate(LocalDate.now()).model(Model.DISNEY).build();
         when(repository.save(funko)).thenReturn(Mono.just(funko));
         var result = service.save(funko).block();
+        assertNotNull(result);
         assertAll("save",
                 () -> assertEquals(result.getName(), funko.getName(), "El Funko no tiene el nombre esperado"),
                 () -> assertEquals(result.getPrice(), funko.getPrice(), "El precio del Funko no es el esperado"),
@@ -234,6 +231,7 @@ class FunkosServiceImplTest {
         when(repository.findById(funko.getCod())).thenReturn(Mono.just(funko));
         when(repository.update(funko.getCod(), funko)).thenReturn(Mono.just(funko));
         var result = service.update(funko.getCod(), funko).block();
+        assertNotNull(result);
         assertAll("update",
                 () -> assertEquals(result.getName(), funko.getName(), "El Funko no tiene el nombre esperado"),
                 () -> assertEquals(result.getPrice(), funko.getPrice(), "El precio del Funko no es el esperado"),
@@ -281,7 +279,7 @@ class FunkosServiceImplTest {
      * Test para GetNotifications
      */
     @Test
-    public void testGetNotifications() {
+    void testGetNotifications() {
         Flux<Notification<Funko>> simulatedNotifications = Flux.just();
         Mockito.when(service.getNotifications()).thenReturn(simulatedNotifications);
         assertNotNull(service.getNotifications());

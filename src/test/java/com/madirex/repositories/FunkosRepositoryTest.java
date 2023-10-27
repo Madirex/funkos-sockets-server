@@ -13,13 +13,14 @@ import org.junit.jupiter.api.Test;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Clase de testeo para la clase FunkoRepository
  */
-class FunkosRepositoryTestDB {
+class FunkosRepositoryTest {
 
     private FunkoRepository funkoRepository;
 
@@ -32,6 +33,7 @@ class FunkosRepositoryTestDB {
     void setUp() throws SQLException {
         funkoRepository = FunkoRepositoryImpl.getInstance(IdGenerator.getInstance(), DatabaseManager.getInstance());
         var list = funkoRepository.findAll().collectList().block();
+        assert list != null;
         list.forEach(e -> {
             try {
                 funkoRepository.delete(e.getCod()).block();
@@ -49,6 +51,7 @@ class FunkosRepositoryTestDB {
     @AfterEach
     void tearDown() throws SQLException {
         var list = funkoRepository.findAll().collectList().block();
+        assert list != null;
         list.forEach(e -> {
             try {
                 funkoRepository.delete(e.getCod()).block();
@@ -73,6 +76,7 @@ class FunkosRepositoryTestDB {
                 .releaseDate(date)
                 .build();
         var saved = funkoRepository.save(funko).block();
+        assertNotNull(saved);
         assertAll("Funko properties",
                 () -> assertNotNull(saved.getCod(), "El ID no debe ser nulo"),
                 () -> assertEquals(funko.getName(), saved.getName(), "Nombre coincide"),
@@ -97,6 +101,7 @@ class FunkosRepositoryTestDB {
                 .releaseDate(date)
                 .build();
         var foundFunko = funkoRepository.save(funko).block();
+        assertNotNull(foundFunko);
         assertAll("Funko properties",
                 () -> assertEquals(funko.getName(), foundFunko.getName(), "Nombre coincide"),
                 () -> assertEquals(funko.getModel(), foundFunko.getModel(), "Modelo coincide"),
@@ -127,7 +132,8 @@ class FunkosRepositoryTestDB {
                 .releaseDate(LocalDate.now())
                 .build()).block();
 
-        assertEquals(2, funkoRepository.findAll().collectList().block().size(), "El número de Funkos debe de coincidir con el esperado");
+        assertEquals(2, Objects.requireNonNull(funkoRepository.findAll().collectList().block()).size(),
+                "El número de Funkos debe de coincidir con el esperado");
     }
 
     /**
@@ -241,6 +247,7 @@ class FunkosRepositoryTestDB {
         funko.setReleaseDate(LocalDate.now());
         funkoRepository.update(funko.getCod(), savedFunko).block();
         var foundFunko = funkoRepository.findById(savedFunko.getCod()).block();
+        assertNotNull(foundFunko);
         assertAll("Funko actualizado",
                 () -> assertEquals(funko.getName(), foundFunko.getName(), "Nombre actualizado debe coincidir"),
                 () -> assertEquals(funko.getPrice(), foundFunko.getPrice(), "Precio actualizado debe coincidir"),
@@ -270,7 +277,7 @@ class FunkosRepositoryTestDB {
         assertNotNull(savedFunko);
 
         var deleteFuture = funkoRepository.delete(savedFunko.getCod()).block();
-        assertTrue(deleteFuture, "La eliminación del Funko se completó con éxito");
+        assertEquals(Boolean.TRUE, deleteFuture, "La eliminación del Funko se completó con éxito");
 
         var foundFunko = funkoRepository.findById(savedFunko.getCod()).block();
 

@@ -64,31 +64,6 @@ public class TokenService {
      *
      * @param token       Token a verificar
      * @param tokenSecret Clave secreta del token
-     * @param user        Usuario que se quiere verificar
-     * @return True si el token es válido, false en caso contrario
-     */
-    public boolean verifyToken(String token, String tokenSecret, User user) {
-        logger.debug(TOKEN_VERIFICATION_PROCESS_MSG);
-        Algorithm algorithm = Algorithm.HMAC256(tokenSecret);
-        try {
-            JWTVerifier verifier = JWT.require(algorithm).build();
-            DecodedJWT decodedJWT = verifier.verify(token);
-            logger.debug(TOKEN_VERIFICATION_MSG);
-            return decodedJWT.getClaim("userid").asString().equalsIgnoreCase(user.id()) &&
-                    decodedJWT.getClaim("username").asString().equalsIgnoreCase(user.username()) &&
-                    decodedJWT.getClaim("rol").asString().equalsIgnoreCase(user.role().toString());
-        } catch (Exception e) {
-            String stre = TOKEN_VERIFICATION_ERROR_MSG + e.getMessage();
-            logger.error(stre);
-            return false;
-        }
-    }
-
-    /**
-     * Verifica el token
-     *
-     * @param token       Token a verificar
-     * @param tokenSecret Clave secreta del token
      * @return True si el token es válido, false en caso contrario
      */
     public boolean verifyToken(String token, String tokenSecret) {

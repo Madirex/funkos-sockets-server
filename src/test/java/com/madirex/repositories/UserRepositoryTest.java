@@ -9,14 +9,23 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Clase UserRepositoryTest
+ */
 class UserRepositoryTest {
     private UsersRepository usersRepository;
 
+    /**
+     * Método que se ejecuta antes de cada test
+     */
     @BeforeEach
     public void setUp() {
         usersRepository = UsersRepository.getInstance();
     }
 
+    /**
+     * Test para comprobar que se puede agregar un usuario
+     */
     @Test
     void testAddUser() {
         usersRepository.addUser(User.builder()
@@ -35,6 +44,9 @@ class UserRepositoryTest {
         );
     }
 
+    /**
+     * Test para comprobar que se puede obtener un usuario por su ID
+     */
     @Test
     void testFindById() {
         var id = UUID.randomUUID().toString();

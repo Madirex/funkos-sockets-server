@@ -1,4 +1,4 @@
-package com.madirex.services.jwt;
+package com.madirex.server.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;

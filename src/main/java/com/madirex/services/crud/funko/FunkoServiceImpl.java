@@ -8,7 +8,7 @@ import com.madirex.models.funko.Model;
 import com.madirex.repositories.funko.FunkoRepositoryImpl;
 import com.madirex.services.cache.FunkoCache;
 import com.madirex.services.io.BackupService;
-import com.madirex.services.notifications.FunkoNotificationImpl;
+import com.madirex.server.notifications.FunkoNotificationImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;

@@ -1,4 +1,4 @@
-package com.madirex.services.notifications;
+package com.madirex.server.notifications;
 
 import com.madirex.models.Notification;
 import com.madirex.models.funko.Funko;
@@ -48,9 +48,10 @@ public class FunkoNotificationImpl implements FunkoNotification {
      * Notifica a los suscriptores de la notificación
      *
      * @param notification Notificación a enviar
+     * @return
      */
     @Override
-    public void notify(Notification<Funko> notification) {
-        fluxNotification.next(notification);
+    public FluxSink<Notification<Funko>> notify(Notification<Funko> notification) {
+        return fluxNotification.next(notification);
     }
 }

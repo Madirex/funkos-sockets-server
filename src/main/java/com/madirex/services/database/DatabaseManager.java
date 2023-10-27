@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.Duration;
@@ -128,14 +127,9 @@ public class DatabaseManager {
     @NotNull
     private Mono<? extends Result> getMonoExecuteInitScript(String scriptSqlFile, Connection connection) {
         String scriptContent;
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(scriptSqlFile)) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-                scriptContent = reader.lines().collect(Collectors.joining("\n"));
-            }
-        } catch (IOException e) {
-            logger.error("Error al leer el script de inicialización de la base de datos");
-            return Mono.error(e);
-        }
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(scriptSqlFile);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        scriptContent = reader.lines().collect(Collectors.joining("\n"));
         Statement statement = connection.createStatement(scriptContent);
         return Mono.from(statement.execute());
     }

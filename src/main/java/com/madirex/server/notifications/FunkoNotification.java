@@ -1,8 +1,9 @@
-package com.madirex.services.notifications;
+package com.madirex.server.notifications;
 
 import com.madirex.models.Notification;
 import com.madirex.models.funko.Funko;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
 
 /**
  * Interfaz para la implementación de notificaciones
@@ -10,5 +11,5 @@ import reactor.core.publisher.Flux;
 public interface FunkoNotification {
     Flux<Notification<Funko>> getNotificationAsFlux();
 
-    void notify(Notification<Funko> notification);
+    FluxSink<Notification<Funko>> notify(Notification<Funko> notification);
 }

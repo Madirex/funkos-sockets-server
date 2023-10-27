@@ -8,7 +8,7 @@ import com.madirex.repositories.funko.FunkoRepositoryImpl;
 import com.madirex.services.cache.FunkoCacheImpl;
 import com.madirex.services.crud.funko.FunkoServiceImpl;
 import com.madirex.services.io.BackupService;
-import com.madirex.services.notifications.FunkoNotificationImpl;
+import com.madirex.server.notifications.FunkoNotificationImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

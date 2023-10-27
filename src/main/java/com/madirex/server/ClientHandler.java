@@ -1,4 +1,4 @@
-package com.madirex.services.server;
+package com.madirex.server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -14,7 +14,7 @@ import com.madirex.models.server.Request;
 import com.madirex.models.server.Response;
 import com.madirex.models.server.User;
 import com.madirex.repositories.server.UsersRepository;
-import com.madirex.services.jwt.TokenService;
+import com.madirex.server.jwt.TokenService;
 import com.madirex.utils.LocalDateAdapter;
 import com.madirex.utils.LocalDateTimeAdapter;
 import org.mindrot.jbcrypt.BCrypt;

@@ -37,7 +37,7 @@ class FunkosServiceImplTest {
     @Mock
     FunkoCacheImpl cache;
     @Mock
-    BackupService backupService;
+    BackupService<Funko> backupService;
     @Mock
     FunkoNotificationImpl notification;
     @InjectMocks
@@ -282,7 +282,7 @@ class FunkosServiceImplTest {
     void testGetNotifications() {
         Flux<Notification<Funko>> simulatedNotifications = Flux.just();
         Mockito.when(service.getNotifications()).thenReturn(simulatedNotifications);
-        assertNotNull(service.getNotifications());
+        assertNotNull(service.getNotifications().subscribe());
     }
 
 }

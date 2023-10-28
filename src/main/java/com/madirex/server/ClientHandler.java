@@ -257,7 +257,9 @@ public class ClientHandler extends Thread {
     private void processGetByModel(Request request) throws ServerException {
         processToken(request.token());
         var model = Model.valueOf(request.content());
-        funkoController.findByModel(model).subscribe(
+        funkoController.findByModel(model)
+                .collectList()
+                .subscribe(
                 funko -> {
                     String str = SENT_RESPONSE_MSG + funko;
                     logger.debug(str);
@@ -283,7 +285,9 @@ public class ClientHandler extends Thread {
     private void processGetByReleaseYear(Request request) throws ServerException {
         processToken(request.token());
         var year = Integer.valueOf(request.content());
-        funkoController.findByReleaseYear(year).subscribe(
+        funkoController.findByReleaseYear(year)
+                .collectList()
+                .subscribe(
                 funko -> {
                     String str = SENT_RESPONSE_MSG + funko;
                     logger.debug(str);

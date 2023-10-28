@@ -1,0 +1,10 @@
+FROM gradle:jdk17 AS build
+
+WORKDIR /app
+
+COPY build.gradle.kts .
+COPY gradlew .
+COPY gradle gradle
+COPY src src
+
+RUN ./gradlew build

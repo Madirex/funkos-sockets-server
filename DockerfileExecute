@@ -1,0 +1,9 @@
+FROM openjdk:17-jdk AS run
+
+WORKDIR /app
+
+COPY --from=build /app/build/libs/*.jar /app/my-app.jar
+
+EXPOSE 3000
+
+ENTRYPOINT ["java","-jar","/app/my-app.jar"]

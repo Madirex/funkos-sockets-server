@@ -59,7 +59,7 @@ public class UsersRepository {
      */
     public Optional<User> findById(String id) {
         return users.stream()
-                .filter(user -> user.id().equalsIgnoreCase(id))
+                .filter(user -> user.id().equalsIgnoreCase(id.replace("\"", "")))
                 .findFirst();
     }
 }

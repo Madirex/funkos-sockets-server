@@ -44,7 +44,7 @@ public class TokenService {
      *
      * @param user            Usuario que se quiere guardar en el token
      * @param tokenSecret     Clave secreta del token
-     * @param tokenExpiration Tiempo de expiracion del token
+     * @param tokenExpiration Tiempo de expiración del token
      * @return Token creado
      */
     public String createToken(User user, String tokenSecret, long tokenExpiration) {

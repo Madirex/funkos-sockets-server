@@ -7,23 +7,20 @@ import com.madirex.exceptions.io.ReadCSVFailException;
 import com.madirex.models.server.User;
 import com.madirex.repositories.funko.FunkoRepositoryImpl;
 import com.madirex.repositories.server.UsersRepository;
+import com.madirex.server.ClientHandler;
+import com.madirex.server.notifications.FunkoNotificationImpl;
 import com.madirex.services.cache.FunkoCacheImpl;
 import com.madirex.services.crud.funko.FunkoServiceImpl;
 import com.madirex.services.crud.funko.IdGenerator;
 import com.madirex.services.database.DatabaseManager;
 import com.madirex.services.io.BackupService;
 import com.madirex.services.io.CsvManager;
-import com.madirex.server.notifications.FunkoNotificationImpl;
-import com.madirex.server.ClientHandler;
 import com.madirex.utils.ApplicationProperties;
 import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.MonoSink;
-import reactor.core.scheduler.Schedulers;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -123,29 +120,26 @@ public class FunkoProgram {
             serverSocket.setEnabledProtocols(new String[]{"TLSv1.3"});
             logger.debug("🚀 Servidor escuchando en el puerto 3000");
             AtomicBoolean exit = new AtomicBoolean(false);
-            Flux<String> userInputFlux = Mono.create((MonoSink<String> sink) -> {
+            Thread consoleThread = new Thread(() -> {
                 Scanner scanner = new Scanner(System.in);
                 logger.info("Escribe exit para salir.");
                 while (!exit.get()) {
-                    String userInput = scanner.nextLine();
-                    if (userInput.equalsIgnoreCase("exit")) {
+                    String input = scanner.nextLine();
+                    if (input.equalsIgnoreCase("exit")) {
                         exit.set(true);
                         notificationSystem.dispose();
                         logger.debug("Cerrando servidor...");
+                        System.exit(0);
+                        break;
                     }
-                    sink.success(userInput);
                 }
                 scanner.close();
-            }).flux();
-            Flux<ClientHandler> clientHandlerFlux = Flux.generate(sink -> Mono.fromCallable(() -> new ClientHandler(serverSocket.accept(),
-                            clientNumber.incrementAndGet(), controller, myConfig))
-                    .subscribeOn(Schedulers.boundedElastic())
-                    .subscribe(
-                            sink::next,
-                            sink::error
-                    ));
+            });
+            consoleThread.start();
 
-            clientHandlerFlux.takeUntilOther(userInputFlux).subscribe(ClientHandler::start);
+            while (!exit.get()) {
+                new ClientHandler(serverSocket.accept(), clientNumber.incrementAndGet(), controller, myConfig).start();
+            }
         } catch (IOException e) {
             String msg = "Error: " + e.getMessage();
             logger.error(msg);

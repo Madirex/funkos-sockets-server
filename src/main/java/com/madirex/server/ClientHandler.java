@@ -169,7 +169,6 @@ public class ClientHandler extends Thread {
         String msg = SENT_RESPONSE_MSG + token;
         logger.debug(msg);
         out.println(gson.toJson(new Response(Response.Status.TOKEN, token, LocalDateTime.now().toString())));
-
     }
 
     /**

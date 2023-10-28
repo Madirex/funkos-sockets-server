@@ -85,7 +85,7 @@ public class FunkoServiceImpl implements FunkoService<List<Funko>> {
      */
     @Override
     public Flux<Funko> findByModel(Model model) {
-        logger.debug("Obteniendo todos los Funkos por su nombre");
+        logger.debug("Obteniendo todos los Funkos por su modelo");
         return funkoRepository.findByModel(model)
                 .collectList()
                 .flatMapMany(list -> {

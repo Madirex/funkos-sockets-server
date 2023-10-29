@@ -28,14 +28,106 @@ realizan tests con JUnit y Mockito.
 
 ### Implementación
 
+Este método inicializa el servidor.
 <p align="center">
   <img src="images/img1.png" alt="Imagen">
 </p>
 
-### Tests
+Este método se encarga de cargar los Funkos e insertarlos en la base de datos.
+<p align="center">
+  <img src="images/img2.png" alt="Imagen">
+</p>
+
+Este método se encarga de cargar los datos del archivo de configuración.
+<p align="center">
+  <img src="images/img3.png" alt="Imagen">
+</p>
+
+Este método se encarga de cargar el sistema de notificaciones.
+<p align="center">
+  <img src="images/img4.png" alt="Imagen">
+</p>
+
+Este método inicializa el programa.
+<p align="center">
+  <img src="images/img5.png" alt="Imagen">
+</p>
+
+Este método agrega los usuarios por defecto para poder administrar la base de datos desde el cliente.
+<p align="center">
+  <img src="images/img6.png" alt="Imagen">
+</p>
+
+Este es un ejemplo de un método GetByModel (Request al servidor)
+<p align="center">
+  <img src="images/img7.png" alt="Imagen">
+</p>
+
+Así se manejan las peticiones:
+<p align="center">
+  <img src="images/img8.png" alt="Imagen">
+</p>
+
+Con este método se cierra la conexión:
+<p align="center">
+  <img src="images/img9.png" alt="Imagen">
+</p>
+
+Con este método se abre la conexión:
+<p align="center">
+  <img src="images/img10.png" alt="Imagen">
+</p>
+
+Este método sirve para verificar el Token.
+<p align="center">
+  <img src="images/img11.png" alt="Imagen">
+</p>
+
+Estos son los métodos para manejar la lógica de los Usuarios.
+<p align="center">
+  <img src="images/img13.png" alt="Imagen">
+</p>
+
+Este es un ejemplo de repositorio. Consulta FindById:
+<p align="center">
+  <img src="images/img14.png" alt="Imagen">
+</p>
+
+Hay varios Record como, por ejemplo, Response, que se encarga de administrar el tipo de respuesta en contacto con el cliente.
+<p align="center">
+  <img src="images/img15.png" alt="Imagen">
+</p>
+
+Por último, esto es un ejemplo de un método del controlador, que valida el Funko y llama al servicio para realizar la acción de guardado:
 
 <p align="center">
+  <img src="images/img17.png" alt="Imagen">
+</p>
+
+### Tests
+Algunos de los tests de la aplicación:
+<p align="center">
   <img src="images/test1.png" alt="Test">
+</p>
+
+<p align="center">
+  <img src="images/test2.png" alt="Test">
+</p>
+
+<p align="center">
+  <img src="images/test3.png" alt="Test">
+</p>
+
+<p align="center">
+  <img src="images/test4.png" alt="Test">
+</p>
+
+<p align="center">
+  <img src="images/test5.png" alt="Test">
+</p>
+
+<p align="center">
+  <img src="images/test6.png" alt="Test">
 </p>
 
 ## ⚙ Herramientas

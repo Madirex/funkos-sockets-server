@@ -1,0 +1,14 @@
+version: '3.1'
+services:
+  server-compile:
+    build:
+      context: .
+      dockerfile: DockerfileCompile
+  server-execute:
+    build:
+      context: .
+      dockerfile: DockerfileExecute
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server-compile
